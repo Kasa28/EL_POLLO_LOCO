@@ -34,6 +34,7 @@ isColliding(mo) {
     }
 
 hit() {
+    if (this.isHurt()) return;  
     this.energy -= 5;
     if(this.energy < 0) {
         this.energy = 0;
