@@ -12,6 +12,9 @@ class Endboss extends MovableObject {
   currentState = "walk";
   speed = 1.2;
 
+  lastAttack = 0;
+  attackCooldown = 1200;
+
   images_walking = [
     'img/4_enemie_boss_chicken/1_walk/G1.png',
     'img/4_enemie_boss_chicken/1_walk/G2.png',
@@ -68,44 +71,33 @@ class Endboss extends MovableObject {
   }
 
   animate() {
-    // Animation State Loop
     setInterval(() => {
-      if (this.isDead) {
-        this.playAnimation(this.images_dead);
-        return;
-      }
+      if (this.isDead) return this.playAnimation(this.images_dead);
+      if (this.isHurtBoss) return this.playAnimation(this.images_hurt);
+      if (!this.isActive) return this.playAnimation(this.images_walking);
 
-      if (this.isHurtBoss) {
-        this.playAnimation(this.images_hurt);
-        return;
-      }
+      if (this.currentState === "alert") return this.playAnimation(this.images_alert);
+      if (this.currentState === "attack") return this.playAnimation(this.images_attack);
 
-      if (!this.isActive) {
-        this.playAnimation(this.images_walking);
-        return;
-      }
-
-      if (this.currentState === "alert") {
-        this.playAnimation(this.images_alert);
-        return;
-      }
-
-      if (this.currentState === "attack") {
-        this.playAnimation(this.images_attack);
-        return;
-      }
-
-      this.playAnimation(this.images_walking);
-    }, 200);
+      return this.playAnimation(this.images_walking);
+    }, 160);
 
     setInterval(() => {
       if (!this.isActive || this.isDead || !this.world) return;
-      if (this.world.character.x < this.x) {
+      const character = this.world.character;
+      const distance = Math.abs(character.x - this.x);
+      if (this.currentState === "alert") return;
+      if (distance < 95) {
+        this.attack(character);
+        return;
+      }
+      this.currentState = "walk";
+      if (character.x < this.x) {
         this.otherDirection = false;
-        this.moveLeft();
+        this.x -= this.speed;
       } else {
         this.otherDirection = true;
-        this.moveRight();
+        this.x += this.speed;
       }
     }, 1000 / 60);
   }
@@ -116,15 +108,31 @@ class Endboss extends MovableObject {
     this.currentState = "alert";
 
     setTimeout(() => {
-      if (!this.isDead) this.currentState = "attack";
-    }, 1500);
+      if (!this.isDead) this.currentState = "walk";
+    }, 1200);
   }
 
-  hitBoss(dmg = 20) {
+  canAttack() {
+    return Date.now() - this.lastAttack > this.attackCooldown;
+  }
+
+  attack(character) {
+    if (!this.canAttack() || this.currentState === "attack") return;
+
+    this.currentState = "attack";
+    this.lastAttack = Date.now();
+
+    character.hit();
+
+    setTimeout(() => {
+      if (!this.isDead) this.currentState = "walk";
+    }, 600);
+  }
+
+  hitBoss(dmg = 30) {
     if (this.isDead) return;
 
     this.energy -= dmg;
-
     if (this.energy <= 0) {
       this.energy = 0;
       this.die();
@@ -132,17 +140,11 @@ class Endboss extends MovableObject {
     }
 
     this.isHurtBoss = true;
-    setTimeout(() => {
-      this.isHurtBoss = false;
-    }, 400);
+    setTimeout(() => (this.isHurtBoss = false), 350);
   }
 
   die() {
     this.isDead = true;
-    this.currentState = "dead";
-
-    setTimeout(() => {
-      this.isRemoved = true; 
-    }, 1000);
+    setTimeout(() => (this.isRemoved = true), 1000);
   }
 }
