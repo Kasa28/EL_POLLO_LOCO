@@ -95,17 +95,18 @@ class Character extends MovableObject {
 
             }else if(this.isAboveGround()) {
                 this.playAnimation(this.images_jumping);
-
             } else {
 
-        if(this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
-            this.playAnimation(this.images_walking);
-        }
-
-        if(this.world.keyboard.UP && !this.isAboveGround()) {
+            if (this.world.keyboard.UP && !this.isAboveGround()) {
             this.jump();
-        }
-    }
+            }
+
+            if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
+            this.playAnimation(this.images_walking);
+           } else {
+            this.img = this.imageCache[this.images_walking[0]];
+  }
+}
         }, 50);
     }
 
