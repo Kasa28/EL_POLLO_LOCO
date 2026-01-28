@@ -9,6 +9,7 @@ camera_x = 0;
 statusBarHealth = new StatusBar(images_health, 10, 0);
 statusBarCoins  = new StatusBar(images_coins, 10, 60);
 statusBarBottle = new StatusBar(images_bootles, 10, 120);
+statusBarBoss = new StatusBar(images_boss, 480, 0);
 throwableObjects = [];
 lastThrow = 0;
 
@@ -27,6 +28,8 @@ constructor(canvas, keyboard) {
 setWorld() {
     this.character.world = this;
     this.character.start();
+    const boss = this.level.enemies.find(e => e instanceof Endboss);
+    if (boss) boss.world = this
 }
 
 run() {
@@ -37,6 +40,9 @@ run() {
         this.checkCollectBottles();
         this.checkStompOnChicken();
         this.checkBottleHitsChicken();
+        this.checkBossTrigger();
+        this.checkBottleHitsBoss();
+        this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
         this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
     }, 50);
 }
@@ -81,6 +87,7 @@ draw() {
     this.addToMap(this.statusBarHealth);
     this.addToMap(this.statusBarCoins);
     this.addToMap(this.statusBarBottle);
+    this.addToMap(this.statusBarBoss);
     this.ctx.translate(this.camera_x, 0);
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
@@ -89,6 +96,8 @@ draw() {
     this.addObjectsToMap(this.throwableObjects);
     this.addObjectsToMap(this.level.clouds);
     this.ctx.translate(-this.camera_x, 0);
+    const boss = this.level.enemies.find(e => e instanceof Endboss);
+    if (boss && boss.isActive && !boss.isRemoved) this.addToMap(this.statusBarBoss);
 
     let self = this;
     requestAnimationFrame(function() {
@@ -96,33 +105,33 @@ draw() {
     });
     }
 
-    addObjectsToMap(objects) {
-        objects.forEach(objects => {
-             this.addToMap(objects);
-        });
-    }
+addObjectsToMap(objects) {
+    objects.forEach(objects => {
+        this.addToMap(objects);
+    });
+}
 
-    addToMap(mo) {
-        if(mo.otherDirection) {
-            this.flippImage(mo);
+addToMap(mo) {
+    if(mo.otherDirection) {
+        this.flippImage(mo);
         }
         mo.draw(this.ctx);
 
 
-        if (mo.otherDirection) {
-            this.flippImageBack(mo);
-        }
+    if (mo.otherDirection) {
+        this.flippImageBack(mo);
     }
+}
 
-    flippImage(mo) {
-        this.ctx.save();
-        this.ctx.translate(mo.width,0);
-        this.ctx.scale(-1, 1);
-        mo.x = mo.x * -1
-    }
+flippImage(mo) {
+    this.ctx.save();
+    this.ctx.translate(mo.width,0);
+    this.ctx.scale(-1, 1);
+    mo.x = mo.x * -1
+}
 
 
-    flippImageBack(mo) {
+flippImageBack(mo) {
   mo.x = mo.x * -1;
   this.ctx.restore();
 }
@@ -180,6 +189,28 @@ isStomping(enemy) {
   const isFalling = this.character.speedY < 0;
   const charBottom = this.character.y + this.character.height;
   const enemyTop = enemy.y;
-  return isFalling && charBottom < enemyTop + 30; // 30px Toleranz
+  return isFalling && charBottom < enemyTop + 30; 
+}
+
+checkBossTrigger() {
+  const boss = this.level.enemies.find(e => e instanceof Endboss);
+  if (!boss) return;
+  if (this.character.x > boss.x - 500) { 
+    boss.setActive();
+  }
+}
+
+checkBottleHitsBoss() {
+  const boss = this.level.enemies.find(e => e instanceof Endboss);
+  if (!boss || boss.isDead) return;
+  this.throwableObjects.forEach((bottle) => {
+    if (bottle.isColliding(boss)) {
+      boss.hitBoss(20);
+      this.statusBarBoss.setPercentage(boss.energy);
+      bottle.x = -9999;
+    }
+  });
+
+  this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
 }
 }
