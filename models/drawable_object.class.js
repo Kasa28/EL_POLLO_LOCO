@@ -24,6 +24,7 @@ drawFrame(ctx) {
     ctx.beginPath();
     ctx.rect(this.x, this.y, this.width, this.height);
     ctx.stroke();
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.25)";
     }
 }
 
