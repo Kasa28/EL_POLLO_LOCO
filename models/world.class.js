@@ -1,7 +1,5 @@
 class World {
 character = new Character();
-level =  level_1;
-enemies = level_1.enemies;
 clouds = level_1.clouds;
 backgroundObjects = level_1.backgroundObjects;
 canvas; 
@@ -10,12 +8,15 @@ keyboard;
 camera_x = 0;
 statusBar = new StatusBar();
 throwableObjects = [];
+lastThrow = 0;
 
 
 constructor(canvas, keyboard) {
     this.ctx = canvas.getContext('2d');
     this.canvas = canvas;
     this.keyboard = keyboard;
+    this.level =  level_1;
+    this.enemies = level_1.enemies;
     this.draw();
     this.setWorld();
     this.run();
@@ -23,6 +24,7 @@ constructor(canvas, keyboard) {
 
 setWorld() {
     this.character.world = this;
+    this.character.start();
 }
 
 run() {
@@ -33,11 +35,14 @@ run() {
 }
 
 checkThrowObjects() {
-    if(this.keyboard.D) {
+    const now = Date.now();
+    if (this.keyboard.D && now - this.lastThrow > 500) {
         let bootle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
         this.throwableObjects.push(bootle);
+        this.lastThrow = now;
     }
 }
+
 
 checkCollisons() {
     this.level.enemies.forEach( (enemy)=> {
