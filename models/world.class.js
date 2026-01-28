@@ -34,6 +34,9 @@ run() {
     setInterval(() => {
         this.checkCollisons();
         this.checkThrowObjects();
+        this.checkCollectCoins();
+        this.checkCollectBottles();
+
     }, 200);
 }
 
@@ -69,6 +72,8 @@ draw() {
     this.ctx.translate(this.camera_x, 0);
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
+    this.addObjectsToMap(this.level.coins);
+    this.addObjectsToMap(this.level.bottles);
     this.addObjectsToMap(this.throwableObjects);
     this.addObjectsToMap(this.level.clouds);
     this.ctx.translate(-this.camera_x, 0);
@@ -107,4 +112,27 @@ draw() {
              mo.x = mo.x * -1
             this.ctx.restore();
     }
+
+    checkCollectCoins() {
+  this.level.coins = this.level.coins.filter((coin) => {
+    if (this.character.isColliding(coin)) {
+      this.character.coins++;
+      this.statusBarCoins.setPercentage((this.character.coins / 10) * 100);
+      return false; 
+    }
+    return true;
+  });
+}
+
+checkCollectBottles() {
+  this.level.bottles = this.level.bottles.filter((bottle) => {
+    if (this.character.isColliding(bottle)) {
+      this.character.bottles++;
+      this.statusBarBottle.setPercentage((this.character.bottles / 10) * 100);
+      return false; 
+    }
+    return true;
+  });
+}
+
 }
