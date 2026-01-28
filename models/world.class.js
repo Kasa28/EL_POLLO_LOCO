@@ -36,8 +36,11 @@ run() {
         this.checkThrowObjects();
         this.checkCollectCoins();
         this.checkCollectBottles();
+        this.checkStompOnChicken();
+        this.checkBottleHitsChicken();
 
-    }, 200);
+    }, 50);
+    this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
 }
 
 checkThrowObjects() {
@@ -49,16 +52,27 @@ checkThrowObjects() {
     }
 }
 
-
 checkCollisons() {
-    this.level.enemies.forEach( (enemy)=> {
-    if(this.character.isColliding(enemy) ) {
-    this.character.hit();
-    this.statusBarHealth.setPercentage(this.character.energy);
+  this.level.enemies.forEach((enemy) => {
 
+    if (enemy instanceof Chicken) {
+      if (enemy.isDead) return;
+
+      if (this.character.isColliding(enemy)) {
+        if (!this.isStomping(enemy)) {        
+          this.character.hit();
+          this.statusBarHealth.setPercentage(this.character.energy);
         }
-    });
+      }
+    } else {
+      if (this.character.isColliding(enemy)) {
+        this.character.hit();
+        this.statusBarHealth.setPercentage(this.character.energy);
+      }
+    }
+  });
 }
+
 
 
 draw() {
@@ -108,31 +122,66 @@ draw() {
         this.ctx.scale(-1, 1);
         mo.x = mo.x * -1
     }
-    flippImageBack(mo) {
-             mo.x = mo.x * -1
-            this.ctx.restore();
-    }
 
-    checkCollectCoins() {
+
+    flippImageBack(mo) {
+  mo.x = mo.x * -1;
+  this.ctx.restore();
+}
+
+checkCollectCoins() {
+  if (!this.level.coins) return;
   this.level.coins = this.level.coins.filter((coin) => {
     if (this.character.isColliding(coin)) {
       this.character.coins++;
       this.statusBarCoins.setPercentage((this.character.coins / 10) * 100);
-      return false; 
+      return false;
     }
     return true;
   });
 }
 
 checkCollectBottles() {
+  if (!this.level.bottles) return;
   this.level.bottles = this.level.bottles.filter((bottle) => {
     if (this.character.isColliding(bottle)) {
       this.character.bottles++;
       this.statusBarBottle.setPercentage((this.character.bottles / 10) * 100);
-      return false; 
+      return false;
     }
     return true;
   });
 }
 
+checkStompOnChicken() {
+  this.level.enemies.forEach((enemy) => {
+    if (enemy instanceof Chicken && !enemy.isDead) {
+      if (this.character.isColliding(enemy) && this.isStomping(enemy)) {
+        enemy.die();
+        this.character.speedY = 15;
+      }
+    }
+  });
+}
+
+checkBottleHitsChicken() {
+  this.throwableObjects.forEach((bottle) => {
+    this.level.enemies.forEach((enemy) => {
+      if (enemy instanceof Chicken && !enemy.isDead) {
+        if (bottle.isColliding(enemy)) {
+          enemy.die();
+          bottle.x = -9999;
+        }
+      }
+    });
+  });
+  this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
+}
+
+isStomping(enemy) {
+  const isFalling = this.character.speedY < 0;
+  const charBottom = this.character.y + this.character.height;
+  const enemyTop = enemy.y;
+  return isFalling && charBottom < enemyTop + 30; // 30px Toleranz
+}
 }
