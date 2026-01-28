@@ -35,7 +35,7 @@ run() {
         this.checkThrowObjects();
         this.checkCollectCoins();
         this.checkCollectBottles();
-        this.checkStompOnChicken();d
+        this.checkStompOnChicken();
         this.checkBottleHitsChicken();
         this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
     }, 50);
