@@ -9,6 +9,7 @@ ctx;
 keyboard;
 camera_x = 0;
 statusBar = new StatusBar();
+throwableObjects = [];
 
 
 constructor(canvas, keyboard) {
@@ -17,22 +18,34 @@ constructor(canvas, keyboard) {
     this.keyboard = keyboard;
     this.draw();
     this.setWorld();
-    this.checkCollisions();
+    this.run();
 }
 
 setWorld() {
     this.character.world = this;
 }
 
-checkCollisions() {
+run() {
     setInterval(() => {
-        this.level.enemies.forEach( (enemy)=> {
-        if(this.character.isColliding(enemy) ) {
-            this.character.hit();
-            this.statusBar.setPercentage(this.character.energy)
+        this.checkCollisons();
+        this.checkThrowObjects();
+    }, 200);
+}
+
+checkThrowObjects() {
+    if(this.keyboard.D) {
+        let bootle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
+        this.throwableObjects.push(bootle);
+    }
+}
+
+checkCollisons() {
+    this.level.enemies.forEach( (enemy)=> {
+    if(this.character.isColliding(enemy) ) {
+    this.character.hit();
+    this.statusBar.setPercentage(this.character.energy)
         }
     });
-    }, 200);
 }
 
 
@@ -45,6 +58,7 @@ draw() {
     this.ctx.translate(this.camera_x, 0);
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
+    this.addObjectsToMap(this.throwableObjects);
     this.addObjectsToMap(this.level.clouds);
     this.ctx.translate(-this.camera_x, 0);
 
