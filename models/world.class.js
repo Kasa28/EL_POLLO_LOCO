@@ -9,7 +9,6 @@ camera_x = 0;
 statusBarHealth = new StatusBar(images_health, 10, 0);
 statusBarCoins  = new StatusBar(images_coins, 10, 60);
 statusBarBottle = new StatusBar(images_bootles, 10, 120);
-
 throwableObjects = [];
 lastThrow = 0;
 
@@ -36,11 +35,10 @@ run() {
         this.checkThrowObjects();
         this.checkCollectCoins();
         this.checkCollectBottles();
-        this.checkStompOnChicken();
+        this.checkStompOnChicken();d
         this.checkBottleHitsChicken();
-
+        this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
     }, 50);
-    this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
 }
 
 checkThrowObjects() {

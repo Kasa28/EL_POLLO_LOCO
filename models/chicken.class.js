@@ -13,9 +13,9 @@ class Chicken extends MovableObject {
     'img/3_enemies_chicken/chicken_normal/2_dead/dead.png'
   ];
 
-  constructor() {
+  constructor(x) {
     super().loadImage(this.images_walking[0]);
-    this.x = 200 + Math.random() * 500;
+    this.x = x;
     this.loadImages(this.images_walking);
     this.loadImages(this.images_dead_chicken);
     this.speed = 0.15 + Math.random() * 0.25;
