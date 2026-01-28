@@ -6,7 +6,10 @@ canvas;
 ctx;
 keyboard;
 camera_x = 0;
-statusBar = new StatusBar();
+statusBarHealth = new StatusBar(images_health, 10, 0);
+statusBarCoins  = new StatusBar(images_coins, 10, 60);
+statusBarBottle = new StatusBar(images_bootles, 10, 120);
+
 throwableObjects = [];
 lastThrow = 0;
 
@@ -48,7 +51,8 @@ checkCollisons() {
     this.level.enemies.forEach( (enemy)=> {
     if(this.character.isColliding(enemy) ) {
     this.character.hit();
-    this.statusBar.setPercentage(this.character.energy)
+    this.statusBarHealth.setPercentage(this.character.energy);
+
         }
     });
 }
@@ -59,7 +63,9 @@ draw() {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObjects);
     this.ctx.translate(-this.camera_x, 0);
-    this.addToMap(this.statusBar);
+    this.addToMap(this.statusBarHealth);
+    this.addToMap(this.statusBarCoins);
+    this.addToMap(this.statusBarBottle);
     this.ctx.translate(this.camera_x, 0);
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
