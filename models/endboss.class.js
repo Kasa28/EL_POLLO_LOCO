@@ -122,7 +122,7 @@ class Endboss extends MovableObject {
     this.currentState = "attack";
     this.lastAttack = Date.now();
 
-    character.hit();
+    character.hit(25);
 
     setTimeout(() => {
       if (!this.isDead) this.currentState = "walk";
