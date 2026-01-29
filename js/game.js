@@ -3,7 +3,7 @@ let world;
 let keyboard;
 
 const IMG_GAMEOVER = "img/You won, you lost/Game over A.png";
-const IMG_YOUWON   = "im/You won, you lost/You Win A.png";
+const IMG_YOUWON   = "img/You won, you lost/You Win A.png";
 
 function init() {
   canvas = document.getElementById("canvas");
