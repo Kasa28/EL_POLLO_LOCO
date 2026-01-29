@@ -26,15 +26,22 @@
 
     <h1>El pollo loco</h1>
     
-    <canvas id="canvas" width="720" height="480"></canvas>
+<div class="game-wrap">
+  <canvas id="canvas" width="720" height="480"></canvas>
 
-    <div class="mobile-controls">
-  <button id="btnLeft"  class="ctrl-btn">◀</button>
-  <button id="btnRight" class="ctrl-btn">▶</button>
-  <button id="btnJump"  class="ctrl-btn">⬆</button>
-  <button id="btnThrow" class="ctrl-btn">🍾</button>
+  <div class="mobile-controls">
+    <div class="ctrl-left">
+      <button id="btnLeft" class="ctrl-btn">◀</button>
+      <button id="btnRight" class="ctrl-btn">▶</button>
+    </div>
 
+    <div class="ctrl-right">
+      <button id="btnJump" class="ctrl-btn">⬆</button>
+      <button id="btnThrow" class="ctrl-btn">🍾</button>
+    </div>
   </div>
+</div>
+
 
     <div class="instruction">
     <h2>Arrows Left/Right = Walk</h2>
