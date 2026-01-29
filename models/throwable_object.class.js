@@ -24,11 +24,9 @@ class ThrowableObject extends MovableObject {
     super().loadImage(this.images_rotation[0]);
     this.loadImages(this.images_rotation);
     this.loadImages(this.images_splash);
-
     this.setStartPosition(x, y);
     this.setThrowDirection(throwRight);
     this.resetThrowPhysics();
-
     this.startFlying();
     this.startRotation();
   }
@@ -102,7 +100,6 @@ class ThrowableObject extends MovableObject {
 
     this.stopFlightLoop();
     this.stopRotationLoop();
-
     this.startSplashAnimation();
     this.scheduleRemove();
   }
