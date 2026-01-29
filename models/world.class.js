@@ -4,34 +4,29 @@ class World {
   ctx;
   keyboard;
   camera_x = 0;
-
   statusBarHealth = new StatusBar(images_health, 10, 0);
   statusBarCoins  = new StatusBar(images_coins, 10, 60);
   statusBarBottle = new StatusBar(images_bootles, 10, 120);
   statusBarBoss   = new StatusBar(images_boss, 480, 0);
-
   throwableObjects = [];
   lastThrow = 0;
-
   gameOver = false;
   gameInterval = null;
   rafId = null;
 
-  constructor(canvas, keyboard) {
+  constructor(canvas, keyboard, onEnd) {
     this.ctx = canvas.getContext("2d");
     this.canvas = canvas;
     this.keyboard = keyboard;
     this.level = level_1;
-
+    this.onEnd = onEnd;
     this.setWorldRefs();
     this.startLoops();
   }
 
-
   setWorldRefs() {
     this.character.world = this;
     this.character.start();
-
     const boss = this.getBoss();
     if (boss) boss.world = this;
   }
@@ -41,12 +36,11 @@ class World {
     this.startDrawLoop();
   }
 
-
   startGameLoop() {
     this.gameInterval = setInterval(() => {
       if (this.gameOver) return;
-      this.updateGameTick();
-      this.cleanupEnemies();
+      this.updateTick();
+      this.cleanup();
     }, 50);
   }
 
@@ -59,27 +53,23 @@ class World {
     loop();
   }
 
-
-  updateGameTick() {
+  updateTick() {
     this.checkCollisons();
     this.checkThrowObjects();
-
     this.checkCollectCoins();
     this.checkCollectBottles();
-
     this.checkStompOnChicken();
     this.checkBottleHitsChicken();
-
     this.checkBossTrigger();
-    this.updateBossBarIfActive();
     this.checkBottleHitsBoss();
-
     this.checkGameOver();
   }
 
-  cleanupEnemies() {
+  cleanup() {
+    this.cleanupBottles();
     this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
   }
+
 
   drawFrame() {
     this.clearCanvas();
@@ -113,6 +103,7 @@ class World {
 
     const boss = this.getBoss();
     if (boss && boss.isActive && !boss.isRemoved) {
+      this.statusBarBoss.setPercentage(boss.energy);
       this.addToMap(this.statusBarBoss);
     }
   }
@@ -134,15 +125,15 @@ class World {
     this.ctx.save();
     this.ctx.translate(mo.width, 0);
     this.ctx.scale(-1, 1);
-    mo.x = mo.x * -1;
+    mo.x *= -1;
   }
 
   flipImageBack(mo) {
-    mo.x = mo.x * -1;
+    mo.x *= -1;
     this.ctx.restore();
   }
 
- 
+
   getBoss() {
     return this.level.enemies.find(e => e instanceof Endboss);
   }
@@ -150,7 +141,11 @@ class World {
 
   checkThrowObjects() {
     const now = Date.now();
-    const canThrow = this.keyboard.D && (now - this.lastThrow > 500) && this.character.bottles > 0;
+    const canThrow =
+      this.keyboard.D &&
+      now - this.lastThrow > 500 &&
+      this.character.bottles > 0;
+
     if (!canThrow) return;
 
     this.spawnBottle();
@@ -168,13 +163,18 @@ class World {
     this.statusBarBottle.setPercentage((this.character.bottles / 10) * 100);
   }
 
+  cleanupBottles() {
+    this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
+  }
+
 
   checkCollisons() {
     this.level.enemies.forEach(enemy => {
       if (!enemy || enemy.isRemoved) return;
-
       if (enemy instanceof Chicken) return this.handleChickenCollision(enemy);
-      return this.handleEnemyCollision(enemy);
+      if (!enemy.isDead && this.character.isColliding(enemy)) {
+        this.damagePlayer();
+      }
     });
   }
 
@@ -182,12 +182,6 @@ class World {
     if (chicken.isDead) return;
     if (!this.character.isColliding(chicken)) return;
     if (this.isStomping(chicken)) return;
-    this.damagePlayer();
-  }
-
-  handleEnemyCollision(enemy) {
-    if (enemy.isDead) return;
-    if (!this.character.isColliding(enemy)) return;
     this.damagePlayer();
   }
 
@@ -205,6 +199,7 @@ class World {
 
   checkCollectCoins() {
     if (!this.level.coins) return;
+
     this.level.coins = this.level.coins.filter(coin => {
       if (!this.character.isColliding(coin)) return true;
       this.character.coins++;
@@ -215,6 +210,7 @@ class World {
 
   checkCollectBottles() {
     if (!this.level.bottles) return;
+
     this.level.bottles = this.level.bottles.filter(bottle => {
       if (!this.character.isColliding(bottle)) return true;
       this.character.bottles++;
@@ -242,36 +238,21 @@ class World {
         if (!(enemy instanceof Chicken)) return;
         if (enemy.isDead) return;
         if (!bottle.isColliding(enemy)) return;
-
         enemy.die();
         bottle.x = -9999;
       });
     });
-
-    this.cleanupBottles();
-  }
-
-  cleanupBottles() {
-    this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
   }
 
 
   checkBossTrigger() {
     const boss = this.getBoss();
-    if (!boss || boss.isDead) return;
-    if (boss.isActive) return;
+    if (!boss || boss.isDead || boss.isActive) return;
 
     const trigger = this.character.x > boss.x - 500;
     if (!trigger) return;
 
     boss.setActive();
-    this.statusBarBoss.setPercentage(boss.energy);
-  }
-
-  updateBossBarIfActive() {
-    const boss = this.getBoss();
-    if (!boss || boss.isRemoved) return;
-    if (!boss.isActive) return;
     this.statusBarBoss.setPercentage(boss.energy);
   }
 
@@ -286,52 +267,29 @@ class World {
       this.statusBarBoss.setPercentage(boss.energy);
       bottle.x = -9999;
 
-      if (boss.isDead) setTimeout(() => boss.isRemoved = true, 1000);
+      if (boss.isDead) setTimeout(() => (boss.isRemoved = true), 1000);
     });
-
-    this.cleanupBottles();
   }
 
 
   checkGameOver() {
-    if (this.isPlayerDead()) return this.endGame(false);
-    if (this.isBossDead()) return this.endGame(true);
-  }
-
-  isPlayerDead() {
-    return this.character.energy <= 0;
-  }
-
-  isBossDead() {
+    if (this.character.energy <= 0) return this.endGame(false);
     const boss = this.getBoss();
-    return boss && boss.isDead;
+    if (boss && boss.isDead) return this.endGame(true);
   }
 
   endGame(won) {
     if (this.gameOver) return;
     this.gameOver = true;
-
     this.stopLoops();
-    this.showEndScreen(won);
+    if (typeof this.onEnd === "function") {
+      this.onEnd(won);
+    }
   }
 
   stopLoops() {
     clearInterval(this.gameInterval);
     if (this.rafId) cancelAnimationFrame(this.rafId);
     this.throwableObjects = [];
-  }
-
-  showEndScreen(won) {
-    const overlay = document.createElement("div");
-    overlay.className = "end-overlay";
-    overlay.innerHTML = `
-      <div class="end-card">
-        <h2>${won ? "YOU WIN! 🏆" : "GAME OVER 💀"}</h2>
-        <button id="btnRestart">Restart</button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    document.getElementById("btnRestart").addEventListener("click", () => location.reload());
   }
 }

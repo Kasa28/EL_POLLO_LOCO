@@ -2,64 +2,86 @@ let canvas;
 let world;
 let keyboard;
 
-function init() {
-    canvas = document.getElementById('canvas');
-    initLevel();
-    keyboard = new Keyboard();
-    world = new World(canvas, keyboard);
-    console.log('My Character is', world.character);
+const IMG_GAMEOVER = "img/You won, you lost/Game over A.png";
+const IMG_YOUWON   = "im/You won, you lost/You Win A.png";
 
+function init() {
+  canvas = document.getElementById("canvas");
+  initLevel();
+  keyboard = new Keyboard();        
+  bindKeyboardEvents();           
+  bindUiButtons();           
+  showStartScreen();             
 }
 
 
-  window.addEventListener("keyup", (e) =>{
-    if(e.keyCode == 39) {
-        keyboard.RIGHT =  false;
-    }
+function bindUiButtons() {
+  document.getElementById("btnStart").addEventListener("click", startGame);
 
-    if(e.keyCode == 37) {
-        keyboard.LEFT =  false;
-    }
+  document.getElementById("btnRestart").addEventListener("click", () => {
+    location.reload();
+  });
 
-    if(e.keyCode == 38) {
-        keyboard.UP =  false;
-    }
+  document.getElementById("btnControls").addEventListener("click", () => {
+    alert("Controls:\n← → Walk\n⬆ / Space Jump\nD / 🍾 Throw");
+  });
+}
 
-    if(e.keyCode == 40) {
-        keyboard.DOWN =  false;
-    }
+function startGame() {
+  hideStartScreen();
+  showIngameUi();
+  world = new World(canvas, keyboard, onGameEnd);
 
-    if(e.keyCode == 32) {
-        keyboard.SPACE =  false;
-    }
+}
 
-    if(e.keyCode == 68) {
-       keyboard.D =  false;
-    }
- });
+function onGameEnd(won) {
+  hideIngameUi();
+  showEndScreen(won);
+}
 
- window.addEventListener("keydown", (e) =>{
-    if(e.keyCode == 39) {
-        keyboard.RIGHT =  true;
-    }
+function showStartScreen() {
+  document.getElementById("startScreen").classList.add("overlay--show");
+  document.getElementById("endScreen").classList.remove("overlay--show");
+  hideIngameUi();
+}
 
-    if(e.keyCode == 37) {
-        keyboard.LEFT =  true;
-    }
+function hideStartScreen() {
+  document.getElementById("startScreen").classList.remove("overlay--show");
+}
 
-    if(e.keyCode == 38) {
-        keyboard.UP =  true;
-    }
+function showEndScreen(won) {
+  const endImg = document.getElementById("endImage");
+  endImg.src = won ? IMG_YOUWON : IMG_GAMEOVER;
 
-    if(e.keyCode == 40) {
-        keyboard.DOWN =  true;
-    }
+  document.getElementById("endScreen").classList.add("overlay--show");
+}
 
-    if(e.keyCode == 32) {
-        keyboard.SPACE =  true;
-    }
+function showIngameUi() {
+  document.querySelector(".mobile-controls").classList.add("mobile-controls--show");
+  document.querySelector(".instruction").classList.add("instruction--show");
+}
 
-    if(e.keyCode == 68) {
-       keyboard.D =  true;
-    }
- });
+function hideIngameUi() {
+  document.querySelector(".mobile-controls").classList.remove("mobile-controls--show");
+  document.querySelector(".instruction").classList.remove("instruction--show");
+}
+
+function bindKeyboardEvents() {
+  window.addEventListener("keyup", (e) => {
+    if (e.keyCode == 39) keyboard.RIGHT = false;
+    if (e.keyCode == 37) keyboard.LEFT = false;
+    if (e.keyCode == 38) keyboard.UP = false;
+    if (e.keyCode == 40) keyboard.DOWN = false;
+    if (e.keyCode == 32) keyboard.SPACE = false;
+    if (e.keyCode == 68) keyboard.D = false;
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.keyCode == 39) keyboard.RIGHT = true;
+    if (e.keyCode == 37) keyboard.LEFT = true;
+    if (e.keyCode == 38) keyboard.UP = true;
+    if (e.keyCode == 40) keyboard.DOWN = true;
+    if (e.keyCode == 32) keyboard.SPACE = true;
+    if (e.keyCode == 68) keyboard.D = true;
+  });
+}

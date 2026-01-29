@@ -29,25 +29,43 @@
 <div class="game-wrap">
   <canvas id="canvas" width="720" height="480"></canvas>
 
+  <div id="startScreen" class="overlay overlay--show">
+    <div class="overlay-card">
+      <img class="overlay-preview" src="img/9_intro_outro_screens/start/startscreen_1.png" alt="El Pollo Loco">
+      <div class="overlay-actions">
+        <button id="btnStart" class="ui-btn">Start Game</button>
+        <button id="btnControls" class="ui-btn ui-btn--ghost">Controls</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="endScreen" class="overlay">
+    <div class="overlay-card">
+      <img id="endImage" class="overlay-preview" src="" alt="">
+      <div class="overlay-actions">
+        <button id="btnRestart" class="ui-btn">Restart</button>
+      </div>
+    </div>
+  </div>
+
   <div class="mobile-controls">
     <div class="ctrl-left">
       <button id="btnLeft" class="ctrl-btn">◀</button>
       <button id="btnRight" class="ctrl-btn">▶</button>
     </div>
-
     <div class="ctrl-right">
       <button id="btnJump" class="ctrl-btn">⬆</button>
       <button id="btnThrow" class="ctrl-btn">🍾</button>
     </div>
   </div>
-</div>
 
-
+  
     <div class="instruction">
     <h2>Arrows Left/Right = Walk</h2>
     <h2>Arrow Up = Jump</h2>
     <h2>D= Throw Tabasco</h2>
     </div>
 
+</div>
 </body>
 </html>
