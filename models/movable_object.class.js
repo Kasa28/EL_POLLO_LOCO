@@ -17,13 +17,12 @@ applyGravitaty() {
 }
 
 isAboveGround() {
-    if(this instanceof ThrowableObject) {
-        return true;
-    } else{
+  if (this instanceof ThrowableObject) {
+    const groundY = 340;
+    return (this.y + this.height) < groundY;
+  }
   return this.y < 130;
-    }
 }
-
 
 isColliding(mo) {
     return this.x + this.width > mo.x && 
