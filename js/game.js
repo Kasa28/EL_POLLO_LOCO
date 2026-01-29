@@ -23,10 +23,9 @@ function bindUiButtons() {
   btnStart.addEventListener("click", startGame);
   btnReplay.addEventListener("click", replayGame);
   btnHome.addEventListener("click", goHome);
-  btnControls.addEventListener("click", () => {
-    document.querySelector(".instruction").classList.toggle("instruction--show");
-  });
-}
+  btnControls.addEventListener("click", openControls);
+  document.getElementById("btnCloseControls").addEventListener("click", closeControls);
+  }
 
 function startGame() {
   hideStartScreen();
@@ -80,16 +79,25 @@ function hideEndScreen() {
   document.getElementById("endScreen").classList.remove("overlay--show");
 }
 
-
 function showIngameUi() {
   document.querySelector(".mobile-controls").classList.add("mobile-controls--show");
-  document.querySelector(".instruction").classList.add("instruction--show");
 }
 
 function hideIngameUi() {
   document.querySelector(".mobile-controls").classList.remove("mobile-controls--show");
-  document.querySelector(".instruction").classList.remove("instruction--show");
 }
+
+function openControls() {
+  document.getElementById("controlsModal").classList.add("overlay--show");
+}
+
+function closeControls() {
+  document.getElementById("controlsModal").classList.remove("overlay--show");
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeControls();
+});
 
 
 function bindKeyboardEvents() {
@@ -113,4 +121,3 @@ function bindKeyboardEvents() {
     if (e.keyCode === 68) keyboard.D = true;
   });
 }
-
