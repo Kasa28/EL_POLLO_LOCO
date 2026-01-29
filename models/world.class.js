@@ -10,6 +10,7 @@ class World {
 
   BOTTLE_THROW_COOLDOWN = 500;
   BOSS_FALL_DELAY = 500;
+  ending = false;
 
   constructor(canvas, keyboard, onEnd) {
     this.canvas = canvas;
@@ -46,15 +47,14 @@ class World {
     this.startTickLoop();
     this.startDrawLoop();
   }
-
-  startTickLoop() {
-    this.tickIntervalId = setInterval(() => {
-      if (this.gameOver) return;
-      this.updateTick();
-      this.removeDeadEnemies();
-      this.checkEndConditions();
-    }, 50);
-  }
+startTickLoop() {
+this.tickIntervalId = setInterval(() => {
+  if (this.gameOver || this.ending) return;
+  this.updateTick();
+  this.removeDeadEnemies();
+  this.checkEndConditions();
+}, 50);
+}
 
   startDrawLoop() {
     const draw = () => {
@@ -84,6 +84,8 @@ class World {
     this.activateBossIfNear();
     this.updateBossBar();
     this.bottleHitsBoss();
+
+    this.statusBarHealth.setPercentage(this.character.energy);
   }
 
 removeDeadEnemies() {
@@ -347,12 +349,13 @@ removeDeadEnemies() {
     return boss.isDead && boss.isRemoved; 
   }
 
-  finishGame(won) {
-    if (this.gameOver) return;
-
+finishGame(won) {
+  if (this.gameOver || this.ending) return;
+  this.ending = true; 
+  setTimeout(() => {
     this.gameOver = true;
     this.stopLoops();
-
     if (typeof this.onEnd === "function") this.onEnd(won);
-  }
+  }, 400);
+}
 }
