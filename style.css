@@ -46,3 +46,26 @@ canvas {
     font-size: 10px;
     gap: 20px;
 }
+
+.mobile-controls{
+  display: none;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.ctrl-btn{
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  border: 0;
+  font-size: 24px;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  touch-action: none; 
+}
+
+@media (max-width: 900px){
+  .mobile-controls{ display: flex; }
+}

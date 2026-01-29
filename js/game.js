@@ -1,10 +1,11 @@
 let canvas;
 let world;
-let keyboard =  new Keyboard();
+let keyboard;
 
 function init() {
     canvas = document.getElementById('canvas');
     initLevel();
+    keyboard = new Keyboard();
     world = new World(canvas, keyboard);
     console.log('My Character is', world.character);
 
