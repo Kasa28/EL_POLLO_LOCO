@@ -36,12 +36,12 @@ class Keyboard {
 
     document.getElementById("btnJump").addEventListener("touchstart", (e) => {
       e.preventDefault();
-      this.SPACE = true;
+      this.UP = true;
     });
 
     document.getElementById("btnJump").addEventListener("touchend", (e) => {
       e.preventDefault();
-      this.SPACE = false;
+      this.UP = false;
     });
 
     document.getElementById("btnThrow").addEventListener("touchstart", (e) => {
