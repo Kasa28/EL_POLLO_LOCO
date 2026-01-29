@@ -3,16 +3,16 @@ let level_1;
 function initLevel() {
   level_1 = new Level(
     [
-      new Chicken(300),
-      new Chicken(500),
-      new Chicken(700),
-      new Chicken(900),
       new Chicken(900),
       new Chicken(1100),
       new Chicken(1300),
       new Chicken(1500),
       new Chicken(1700),
-      new Endboss(1900)
+      new Chicken(1900),
+      new Chicken(2100),
+      new Chicken(2300),
+      new Chicken(2500),
+      new Endboss(3000)
     ],
     [
       new Cloud()
