@@ -33,20 +33,18 @@ isColliding(mo) {
 
     }
 
-hit() {
+hit(dmg = 5) {
     if (this.isHurt()) return;  
-    this.energy -= 5;
+    this.energy -= dmg;
     if(this.energy < 0) {
         this.energy = 0;
     } else {
-        this.lastHit = new Date().getTime();
+        this.lastHit = Date.now();
     }
 }   
 
 isHurt() {
-    let timepassed = new Date().getTime() - this.lastHit;
-    timepassed = timepassed / 1000;
-    return timepassed < 1;
+    return Date.now() - this.lastHit < 250;
 }
 
 
