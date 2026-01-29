@@ -35,13 +35,24 @@ class Chicken extends MovableObject {
 }
 
 
-  animation_chicken() {
-    setInterval(() => {
-      if (!this.isDead) this.moveLeft();
-    }, 1000 / 60);
+animation_chicken() {
+  setInterval(() => {
+    if (this.isDead) return;
 
-    setInterval(() => {
-      if (!this.isDead) this.playAnimation(this.images_walking);
-    }, 100);
-  }
+    const char = this.world?.character;
+    if (!char) return;
+
+    const distance = Math.abs(this.x - char.x);
+    const aggroRange = 650; 
+
+    if (distance < aggroRange) {
+      if (this.x > char.x) this.moveLeft();
+      else this.moveRight();
+    }
+  }, 1000 / 60);
+
+  setInterval(() => {
+    if (!this.isDead) this.playAnimation(this.images_walking);
+  }, 100);
+}
 }
