@@ -20,6 +20,8 @@ function bindUiButtons() {
   const btnControls = document.getElementById("btnControls");
   const btnReplay = document.getElementById("btnReplay");
   const btnHome = document.getElementById("btnHome");
+  const btnFullscreen = document.getElementById("btnFullscreen");
+  if (btnFullscreen) btnFullscreen.addEventListener("click", toggleFullscreen);
   btnStart.addEventListener("click", startGame);
   btnReplay.addEventListener("click", replayGame);
   btnHome.addEventListener("click", goHome);
@@ -95,9 +97,44 @@ function closeControls() {
   document.getElementById("controlsModal").classList.remove("overlay--show");
 }
 
+function toggleFullscreen() {
+  const wrap = document.querySelector(".game-wrap");
+  if (!wrap) return;
+
+  if (!document.fullscreenElement) {
+    wrap.requestFullscreen?.();
+  } else {
+    document.exitFullscreen?.();
+  }
+}
+
+function enterFullscreen(element) {
+  if (!element) return;
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.webkitRequestFullscreen) { 
+    element.webkitRequestFullscreen();
+  } else if (element.msRequestFullscreen) { 
+    element.msRequestFullscreen();
+  }
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.webkitExitFullscreen) { 
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { 
+    document.msExitFullscreen();
+  }
+}
+
+
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeControls();
 });
+
+
 
 
 function bindKeyboardEvents() {
