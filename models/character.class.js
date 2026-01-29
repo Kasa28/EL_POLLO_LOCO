@@ -70,8 +70,6 @@ class Character extends MovableObject {
     energy = 100;
     coins = 0;
     bottles = 0;
-
-
     world;
     damage = 20;
     throwBottles = [];
@@ -80,8 +78,10 @@ class Character extends MovableObject {
         bottom: 30,
         left: 40, 
         right: 30
-
     }
+    deadFrame = 0;  
+    deadPlayedOnce = false;  
+  
 
     constructor() {
         super().loadImage('img/2_character_pepe/2_walk/W-21.png');
@@ -104,24 +104,23 @@ class Character extends MovableObject {
   }
 
   handleMovement() {
+    if(this.isDead()) return;
     if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end) {
       this.moveRight();
       this.otherDirection = false;
     }
-
     if (this.world.keyboard.LEFT && this.x > 0) {
       this.otherDirection = true;
       this.moveLeft();
     }
-
     this.world.camera_x = -this.x + 100;
   }
 
   handleAnimations() {
+    if (this.isDead()) return this.playDeadOnce();
     if (this.isDead()) return this.playAnimation(this.images_dead);
     if (this.isHurt()) return this.playAnimation(this.images_hurt);
     if (this.isAboveGround()) return this.playAnimation(this.images_jumping);
-
     this.handleGroundState();
   }
 
@@ -129,7 +128,6 @@ class Character extends MovableObject {
     if (this.world.keyboard.UP && !this.isAboveGround()) {
       this.jump();
     }
-
     if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
       this.playAnimation(this.images_walking);
       this.resetIdle();
@@ -140,16 +138,13 @@ class Character extends MovableObject {
 
   handleIdle() {
     this.idleTime += 50;
-
     const now = Date.now();
     if (now - this.lastIdleFrame < 500) return; 
-
     if (this.idleTime > 20000) {
       this.playAnimation(this.images_long_idle);
     } else {
       this.playAnimation(this.images_idle);
     }
-
     this.lastIdleFrame = now;
   }
 
@@ -161,6 +156,21 @@ class Character extends MovableObject {
   jump() {
     this.speedY = 30;
   }
+
+
+  playDeadOnce() {
+  if (!this.deadPlayedOnce) {
+    const lastIndex = this.images_dead.length - 1;
+    const i = Math.min(this.deadFrame, lastIndex);
+    const path = this.images_dead[i];
+    this.img = this.imageCache[path];
+    if (this.deadFrame < lastIndex) {
+      this.deadFrame++;
+    } else {
+      this.deadPlayedOnce = true; 
+    }
+  }
+}
 }
 
   
