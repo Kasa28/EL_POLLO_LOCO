@@ -20,23 +20,12 @@ function bindUiButtons() {
   const btnControls = document.getElementById("btnControls");
   const btnReplay = document.getElementById("btnReplay");
   const btnHome = document.getElementById("btnHome");
-
   btnStart.addEventListener("click", startGame);
-
-  btnReplay.addEventListener("click", () => location.reload());
-  btnHome.addEventListener("click", () => location.reload());
-
+  btnReplay.addEventListener("click", replayGame);
+  btnHome.addEventListener("click", goHome);
   btnControls.addEventListener("click", () => {
     document.querySelector(".instruction").classList.toggle("instruction--show");
   });
-}
-
-
-function startGame() {
-  hideStartScreen();
-  showIngameUi();
-  initLevel();
-  world = new World(canvas, keyboard, onGameEnd);
 }
 
 function startGame() {
@@ -49,9 +38,20 @@ function startGame() {
 
 function replayGame() {
   if (world?.stopLoops) world.stopLoops();
-  startGame();
+  hideEndScreen();
+  showIngameUi();
+  initLevel();
+  world = new World(canvas, keyboard, onGameEnd);
 }
 
+function goHome() {
+  if (world?.stopLoops) world.stopLoops();
+  world = null;
+
+  hideEndScreen();
+  hideIngameUi();
+  showStartScreen();
+}
 
 function onGameEnd(won) {
   hideIngameUi();
