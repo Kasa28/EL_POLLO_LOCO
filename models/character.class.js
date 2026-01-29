@@ -67,12 +67,13 @@ class Character extends MovableObject {
     idleTime = 0;
     idleMode = 'normal';
     lastIdleFrame = 0;
+    energy = 100;
+    coins = 0;
+    bottles = 0;
 
 
     world;
     damage = 20;
-    bottles = 0;
-    coins = 0;
     throwBottles = [];
     offset = {
         top: 120,
