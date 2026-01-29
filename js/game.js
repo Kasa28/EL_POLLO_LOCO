@@ -3,91 +3,79 @@ let world;
 let keyboard;
 
 const ASSETS = {
-  win: "img/You won, you lost/You won A.png",          
-  lose: "img/9_intro_outro_screens/game_over/game over.png" 
+  win:  "img/You won, you lost/You won A.png",
+  lose: "img/9_intro_outro_screens/game_over/game over.png"
 };
 
 function init() {
   canvas = document.getElementById("canvas");
-
-  const startScreen = document.getElementById("startScreen");
-  const endScreen = document.getElementById("endScreen");
-  const endImage = document.getElementById("endImage");
-
-  const btnStart = document.getElementById("btnStart");
-  const btnControls = document.getElementById("btnControls");
-  const btnRestart = document.getElementById("btnRestart");
-
-  const mobileControls = document.querySelector(".mobile-controls");
-  const instruction = document.querySelector(".instruction");
-
-
-  show(startScreen);
-  hide(endScreen);
-  hideElement(mobileControls);
-
   keyboard = new Keyboard();
 
-  btnStart.addEventListener("click", () => startGame(startScreen, mobileControls, instruction));
-  btnReplay.addEventListener("click", restartGame);
-  btnControls.addEventListener("click", () => toggleElement(instruction));
-
+  bindUiButtons();
   bindKeyboardEvents();
+
+  showStartScreen();
 }
 
-function startGame(startScreen, mobileControls, instruction) {
-  hide(startScreen);
-  hide(instruction);               
-  showElement(mobileControls);
+function bindUiButtons() {
+  const btnStart = document.getElementById("btnStart");
+  const btnControls = document.getElementById("btnControls");
+  const btnReplay = document.getElementById("btnReplay");
+  const btnHome = document.getElementById("btnHome");
 
-  initLevel();
+  btnStart.addEventListener("click", startGame);
 
-  world = new World(canvas, keyboard, (won) => {
-    onGameEnd(won, mobileControls);
+  btnReplay.addEventListener("click", () => location.reload());
+  btnHome.addEventListener("click", () => location.reload());
+
+  btnControls.addEventListener("click", () => {
+    document.querySelector(".instruction").classList.toggle("instruction--show");
   });
 }
 
-function onGameEnd(won, mobileControls) {
-  const endScreen = document.getElementById("endScreen");
-  const endImage = document.getElementById("endImage");
 
-  hideElement(mobileControls);
-
-  endImage.src = won ? ASSETS.win : ASSETS.lose;
-  endImage.alt = won ? "You Won" : "Game Over";
-
-  show(endScreen);
+function startGame() {
+  hideStartScreen();
+  showIngameUi();
+  initLevel();
+  world = new World(canvas, keyboard, onGameEnd);
 }
 
-function restartGame() {
-  location.reload();
+function onGameEnd(won) {
+  hideIngameUi();
+  showEndScreen(won);
 }
 
-function show(el) {
-  if (!el) return;
-  el.classList.add("overlay--show");
+function showStartScreen() {
+  document.getElementById("startScreen").classList.add("overlay--show");
+  document.getElementById("endScreen").classList.remove("overlay--show");
+
+  hideIngameUi();
 }
 
-function hide(el) {
-  if (!el) return;
-  el.classList.remove("overlay--show");
+function hideStartScreen() {
+  document.getElementById("startScreen").classList.remove("overlay--show");
 }
 
-function showElement(el) {
-  if (!el) return;
-  el.style.display = "";
+function showEndScreen(won) {
+  const endImg = document.getElementById("endImage");
+  endImg.src = won ? ASSETS.win : ASSETS.lose;
+  endImg.alt = won ? "You Won" : "Game Over";
+
+  document.getElementById("endScreen").classList.add("overlay--show");
 }
 
-function hideElement(el) {
-  if (!el) return;
-  el.style.display = "none";
+
+function showIngameUi() {
+  document.querySelector(".mobile-controls").classList.add("mobile-controls--show");
+  document.querySelector(".instruction").classList.add("instruction--show");
 }
 
-function toggleElement(el) {
-  if (!el) return;
-  const isHidden = getComputedStyle(el).display === "none";
-  el.style.display = isHidden ? "" : "none";
+function hideIngameUi() {
+  document.querySelector(".mobile-controls").classList.remove("mobile-controls--show");
+  document.querySelector(".instruction").classList.remove("instruction--show");
 }
+
 
 function bindKeyboardEvents() {
   window.addEventListener("keyup", (e) => {

@@ -1,6 +1,3 @@
-/* =========================
-   Fonts
-========================= */
 @font-face {
   font-family: "Bungee";
   src: url("./fonts/Bungee-Regular.ttf") format("truetype");
@@ -9,9 +6,7 @@
   font-display: swap;
 }
 
-/* =========================
-   Base
-========================= */
+
 * { box-sizing: border-box; }
 
 html, body { height: 100%; }
@@ -28,7 +23,6 @@ body{
   font-family: "Bungee", sans-serif;
 }
 
-/* Title */
 h1{
   margin: 0;
   text-align: center;
@@ -36,9 +30,7 @@ h1{
   text-shadow: 0 6px 18px rgba(0,0,0,.25);
 }
 
-/* =========================
-   Game Wrap (frame)
-========================= */
+
 .game-wrap{
   position: relative;
   width: min(92vw, 720px);
@@ -48,23 +40,18 @@ h1{
   background: rgba(0,0,0,.18);
 }
 
-/* Canvas responsive */
 #canvas{
   width: 100%;
   height: auto;
   display: block;
-  background: transparent; /* wichtig: kein schwarzer Rand */
+  background: transparent; 
 }
 
-/* Hide title on very low height */
 @media (max-height: 480px){
   body{ padding: 8px; gap: 8px; }
   h1{ display: none; }
 }
 
-/* =========================
-   Overlays (Start / End)
-========================= */
 .overlay{
   position: absolute;
   inset: 0;
@@ -118,9 +105,6 @@ h1{
   color: #fff;
 }
 
-/* =========================
-   Mobile Controls (in-canvas)
-========================= */
 .mobile-controls{
   position: absolute;
   left: 0;
@@ -132,7 +116,7 @@ h1{
   z-index: 40;
 
   pointer-events: none;
-  opacity: 0;                 /* hidden by default */
+  opacity: 0;               
   transform: translateY(8px);
   transition: .2s ease;
 }
@@ -171,7 +155,7 @@ h1{
   background: rgba(20, 12, 6, .62);
 }
 
-/* Jump/Throw slightly bigger */
+
 #btnJump,
 #btnThrow{
   width: 62px;
@@ -180,16 +164,14 @@ h1{
   border-radius: 18px;
 }
 
-/* Hide mobile controls on desktop */
+
 @media (min-width: 900px){
   .mobile-controls{ display: none !important; }
 }
 
-/* =========================
-   Instruction
-========================= */
+
 .instruction{
-  display: none;              /* hidden by default */
+  display: none;              
   width: min(92vw, 720px);
   text-align: center;
   font-size: 12px;
@@ -209,8 +191,22 @@ h1{
   flex-wrap: wrap;
 }
 
-/* On very small screens, keep instruction readable */
 @media (max-width: 520px){
   .instruction{ font-size: 11px; }
   .instruction h2{ font-size: 11px; }
+}
+
+.overlay-card{ position: relative; }
+
+.overlay-actions--top{
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  z-index: 5;
 }
