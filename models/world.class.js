@@ -1,80 +1,99 @@
 class World {
-  character = new Character();
-  canvas;
-  ctx;
-  keyboard;
   camera_x = 0;
-  statusBarHealth = new StatusBar(images_health, 10, 0);
-  statusBarCoins  = new StatusBar(images_coins, 10, 60);
-  statusBarBottle = new StatusBar(images_bootles, 10, 120);
-  statusBarBoss   = new StatusBar(images_boss, 480, 0);
+
   throwableObjects = [];
   lastThrow = 0;
+
   gameOver = false;
-  gameInterval = null;
+  tickIntervalId = null;
   rafId = null;
 
+  BOTTLE_THROW_COOLDOWN = 500;
+  BOSS_FALL_DELAY = 500;
+
   constructor(canvas, keyboard, onEnd) {
-    this.ctx = canvas.getContext("2d");
     this.canvas = canvas;
+    this.ctx = canvas.getContext("2d");
     this.keyboard = keyboard;
-    this.level = level_1;
     this.onEnd = onEnd;
-    this.setWorldRefs();
+
+    this.level = level_1;
+    this.character = new Character();
+
+    this.statusBarHealth = new StatusBar(images_health, 10, 0);
+    this.statusBarCoins  = new StatusBar(images_coins, 10, 60);
+    this.statusBarBottle = new StatusBar(images_bootles, 10, 120);
+    this.statusBarBoss   = new StatusBar(images_boss, 480, 0);
+
+    this.linkWorldToObjects();
     this.startLoops();
   }
 
-  setWorldRefs() {
+
+  linkWorldToObjects() {
     this.character.world = this;
     this.character.start();
     const boss = this.getBoss();
     if (boss) boss.world = this;
   }
 
+  getBoss() {
+    return this.level.enemies.find(e => e instanceof Endboss);
+  }
+
+
   startLoops() {
-    this.startGameLoop();
+    this.startTickLoop();
     this.startDrawLoop();
   }
 
-  startGameLoop() {
-    this.gameInterval = setInterval(() => {
+  startTickLoop() {
+    this.tickIntervalId = setInterval(() => {
       if (this.gameOver) return;
       this.updateTick();
-      this.cleanup();
+      this.removeDeadEnemies();
+      this.checkEndConditions();
     }, 50);
   }
 
   startDrawLoop() {
-    const loop = () => {
+    const draw = () => {
       if (this.gameOver) return;
       this.drawFrame();
-      this.rafId = requestAnimationFrame(loop);
+      this.rafId = requestAnimationFrame(draw);
     };
-    loop();
+    draw();
   }
+
+  stopLoops() {
+    clearInterval(this.tickIntervalId);
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+  }
+
 
   updateTick() {
-    this.checkCollisons();
-    this.checkThrowObjects();
-    this.checkCollectCoins();
-    this.checkCollectBottles();
-    this.checkStompOnChicken();
-    this.checkBottleHitsChicken();
-    this.checkBossTrigger();
-    this.checkBottleHitsBoss();
-    this.checkGameOver();
+    this.handleEnemyCollisions();
+    this.handleThrowing();
+
+    this.collectCoins();
+    this.collectBottles();
+
+    this.stompChicken();
+    this.bottleHitsChicken();
+
+    this.activateBossIfNear();
+    this.updateBossBar();
+    this.bottleHitsBoss();
   }
 
-  cleanup() {
-    this.cleanupBottles();
-    this.level.enemies = this.level.enemies.filter(e => !e.isRemoved);
-  }
-
+removeDeadEnemies() {
+  this.level.enemies = this.level.enemies.filter(e => (e instanceof Endboss) || !e.isRemoved);
+}
 
   drawFrame() {
     this.clearCanvas();
     this.drawWorld();
-    this.drawHUD();
+    this.drawHud();
   }
 
   clearCanvas() {
@@ -84,104 +103,105 @@ class World {
   drawWorld() {
     this.ctx.translate(this.camera_x, 0);
 
-    this.addObjectsToMap(this.level.backgroundObjects);
-    this.addObjectsToMap(this.level.enemies);
-    this.addObjectsToMap(this.level.coins);
-    this.addObjectsToMap(this.level.bottles);
-    this.addObjectsToMap(this.throwableObjects);
-    this.addObjectsToMap(this.level.clouds);
+    this.drawObjects(this.level.backgroundObjects);
+    this.drawObjects(this.level.enemies);
+    this.drawObjects(this.level.coins);
+    this.drawObjects(this.level.bottles);
+    this.drawObjects(this.throwableObjects);
+    this.drawObjects(this.level.clouds);
 
-    this.addToMap(this.character);
+    this.drawObject(this.character);
 
     this.ctx.translate(-this.camera_x, 0);
   }
 
-  drawHUD() {
-    this.addToMap(this.statusBarHealth);
-    this.addToMap(this.statusBarCoins);
-    this.addToMap(this.statusBarBottle);
+  drawHud() {
+    this.drawObject(this.statusBarHealth);
+    this.drawObject(this.statusBarCoins);
+    this.drawObject(this.statusBarBottle);
 
     const boss = this.getBoss();
-    if (boss && boss.isActive && !boss.isRemoved) {
-      this.statusBarBoss.setPercentage(boss.energy);
-      this.addToMap(this.statusBarBoss);
-    }
+    if (this.shouldShowBossBar(boss)) this.drawObject(this.statusBarBoss);
   }
 
-  addObjectsToMap(objects) {
-    if (!objects) return;
-    objects.forEach(o => this.addToMap(o));
+  shouldShowBossBar(boss) {
+    return boss && boss.isActive && !boss.isRemoved;
   }
 
-  addToMap(mo) {
-    if (!mo || mo.isRemoved) return;
-
-    if (mo.otherDirection) this.flipImage(mo);
-    mo.draw(this.ctx);
-    if (mo.otherDirection) this.flipImageBack(mo);
+  drawObjects(list) {
+    if (!list) return;
+    list.forEach(obj => this.drawObject(obj));
   }
 
-  flipImage(mo) {
+  drawObject(obj) {
+    if (!obj || obj.isRemoved) return;
+
+    if (obj.otherDirection) this.flipObject(obj);
+    obj.draw(this.ctx);
+    if (obj.otherDirection) this.unflipObject(obj);
+  }
+
+  flipObject(obj) {
     this.ctx.save();
-    this.ctx.translate(mo.width, 0);
+    this.ctx.translate(obj.width, 0);
     this.ctx.scale(-1, 1);
-    mo.x *= -1;
+    obj.x *= -1;
   }
 
-  flipImageBack(mo) {
-    mo.x *= -1;
+  unflipObject(obj) {
+    obj.x *= -1;
     this.ctx.restore();
   }
 
 
-  getBoss() {
-    return this.level.enemies.find(e => e instanceof Endboss);
+  handleThrowing() {
+    if (!this.canThrowBottle()) return;
+    this.createBottle();
+    this.useOneBottle();
+    this.lastThrow = Date.now();
   }
 
-
-  checkThrowObjects() {
+  canThrowBottle() {
     const now = Date.now();
-    const canThrow =
-      this.keyboard.D &&
-      now - this.lastThrow > 500 &&
-      this.character.bottles > 0;
-
-    if (!canThrow) return;
-
-    this.spawnBottle();
-    this.consumeBottle();
-    this.lastThrow = now;
+    const cooldownReady = now - this.lastThrow > this.BOTTLE_THROW_COOLDOWN;
+    return this.keyboard.D && cooldownReady && this.character.bottles > 0;
   }
 
-  spawnBottle() {
+  createBottle() {
     const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
     this.throwableObjects.push(bottle);
   }
 
-  consumeBottle() {
+  useOneBottle() {
     this.character.bottles--;
+    this.updateBottleBar();
+  }
+
+  updateBottleBar() {
     this.statusBarBottle.setPercentage((this.character.bottles / 10) * 100);
   }
 
-  cleanupBottles() {
-    this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
+
+  handleEnemyCollisions() {
+    this.level.enemies.forEach(enemy => this.handleSingleEnemyCollision(enemy));
   }
 
+  handleSingleEnemyCollision(enemy) {
+    if (!enemy || enemy.isRemoved) return;
+    if (!this.character.isColliding(enemy)) return;
 
-  checkCollisons() {
-    this.level.enemies.forEach(enemy => {
-      if (!enemy || enemy.isRemoved) return;
-      if (enemy instanceof Chicken) return this.handleChickenCollision(enemy);
-      if (!enemy.isDead && this.character.isColliding(enemy)) {
-        this.damagePlayer();
-      }
-    });
+    if (enemy instanceof Chicken) return this.handleChickenTouch(enemy);
+    return this.handleOtherEnemyTouch(enemy);
   }
 
-  handleChickenCollision(chicken) {
+  handleChickenTouch(chicken) {
     if (chicken.isDead) return;
-    if (!this.character.isColliding(chicken)) return;
-    if (this.isStomping(chicken)) return;
+    if (this.isStompHit(chicken)) return;
+    this.damagePlayer();
+  }
+
+  handleOtherEnemyTouch(enemy) {
+    if (enemy.isDead) return;
     this.damagePlayer();
   }
 
@@ -190,14 +210,15 @@ class World {
     this.statusBarHealth.setPercentage(this.character.energy);
   }
 
-  isStomping(enemy) {
-    const isFalling = this.character.speedY < 0;
+  isStompHit(enemy) {
+    const fallingDown = this.character.speedY < 0;
     const charBottom = this.character.y + this.character.height;
     const enemyTop = enemy.y;
-    return isFalling && charBottom < enemyTop + 30;
+    return fallingDown && charBottom < enemyTop + 30;
   }
 
-  checkCollectCoins() {
+
+  collectCoins() {
     if (!this.level.coins) return;
 
     this.level.coins = this.level.coins.filter(coin => {
@@ -208,88 +229,130 @@ class World {
     });
   }
 
-  checkCollectBottles() {
+  collectBottles() {
     if (!this.level.bottles) return;
 
     this.level.bottles = this.level.bottles.filter(bottle => {
       if (!this.character.isColliding(bottle)) return true;
       this.character.bottles++;
-      this.statusBarBottle.setPercentage((this.character.bottles / 10) * 100);
+      this.updateBottleBar();
       return false;
     });
   }
 
-
-  checkStompOnChicken() {
+  stompChicken() {
     this.level.enemies.forEach(enemy => {
       if (!(enemy instanceof Chicken)) return;
       if (enemy.isDead) return;
       if (!this.character.isColliding(enemy)) return;
-      if (!this.isStomping(enemy)) return;
+      if (!this.isStompHit(enemy)) return;
 
       enemy.die();
       this.character.speedY = 15;
     });
   }
 
-  checkBottleHitsChicken() {
-    this.throwableObjects.forEach(bottle => {
-      this.level.enemies.forEach(enemy => {
-        if (!(enemy instanceof Chicken)) return;
-        if (enemy.isDead) return;
-        if (!bottle.isColliding(enemy)) return;
-        enemy.die();
-        bottle.x = -9999;
-      });
+  bottleHitsChicken() {
+    this.throwableObjects.forEach(bottle => this.checkBottleAgainstChickens(bottle));
+    this.removeInvisibleBottles();
+  }
+
+  checkBottleAgainstChickens(bottle) {
+    this.level.enemies.forEach(enemy => {
+      if (!(enemy instanceof Chicken)) return;
+      if (enemy.isDead) return;
+      if (!bottle.isColliding(enemy)) return;
+
+      enemy.die();
+      this.hideBottle(bottle);
     });
   }
 
-
-  checkBossTrigger() {
+  activateBossIfNear() {
     const boss = this.getBoss();
-    if (!boss || boss.isDead || boss.isActive) return;
+    if (!boss) return;
+    if (boss.isDead || boss.isActive) return;
 
-    const trigger = this.character.x > boss.x - 500;
-    if (!trigger) return;
+    if (!this.isBossTriggerReached(boss)) return;
 
     boss.setActive();
     this.statusBarBoss.setPercentage(boss.energy);
   }
 
-  checkBottleHitsBoss() {
+  isBossTriggerReached(boss) {
+    return this.character.x > boss.x - 500;
+  }
+
+  updateBossBar() {
     const boss = this.getBoss();
-    if (!boss || boss.isDead || boss.isRemoved) return;
+    if (!boss) return;
+    if (!boss.isActive || boss.isRemoved) return;
 
-    this.throwableObjects.forEach(bottle => {
-      if (!bottle.isColliding(boss)) return;
+    this.statusBarBoss.setPercentage(boss.energy);
+  }
 
-      boss.hitBoss(20);
-      this.statusBarBoss.setPercentage(boss.energy);
-      bottle.x = -9999;
+  bottleHitsBoss() {
+    const boss = this.getBoss();
+    if (!this.canHitBoss(boss)) return;
 
-      if (boss.isDead) setTimeout(() => (boss.isRemoved = true), 1000);
-    });
+    this.throwableObjects.forEach(bottle => this.checkBottleAgainstBoss(bottle, boss));
+    this.removeInvisibleBottles();
+  }
+
+  canHitBoss(boss) {
+    return boss && !boss.isDead && !boss.isRemoved;
+  }
+
+  checkBottleAgainstBoss(bottle, boss) {
+    if (!bottle.isColliding(boss)) return;
+
+    this.hitBoss(boss);
+    this.hideBottle(bottle);
+
+    if (boss.isDead) this.scheduleBossRemove(boss);
+  }
+
+  hitBoss(boss) {
+    boss.hitBoss(20);
+    this.statusBarBoss.setPercentage(boss.energy);
+  }
+
+  scheduleBossRemove(boss) {
+    setTimeout(() => {
+      boss.isRemoved = true;
+    }, this.BOSS_FALL_DELAY);
+  }
+
+  hideBottle(bottle) {
+    bottle.x = -9999;
+  }
+
+  removeInvisibleBottles() {
+    this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
   }
 
 
-  checkGameOver() {
-    if (this.character.energy <= 0) return this.endGame(false);
-    const boss = this.getBoss();
-    if (boss && boss.isDead) return this.endGame(true);
+  checkEndConditions() {
+    if (this.isPlayerDead()) return this.finishGame(false);
+    if (this.isBossRemovedAfterDeath()) return this.finishGame(true);
   }
 
-  endGame(won) {
+  isPlayerDead() {
+    return this.character.energy <= 0;
+  }
+
+  isBossRemovedAfterDeath() {
+    const boss = this.getBoss();
+    if (!boss) return false;
+    return boss.isDead && boss.isRemoved; 
+  }
+
+  finishGame(won) {
     if (this.gameOver) return;
+
     this.gameOver = true;
     this.stopLoops();
-    if (typeof this.onEnd === "function") {
-      this.onEnd(won);
-    }
-  }
 
-  stopLoops() {
-    clearInterval(this.gameInterval);
-    if (this.rafId) cancelAnimationFrame(this.rafId);
-    this.throwableObjects = [];
+    if (typeof this.onEnd === "function") this.onEnd(won);
   }
 }

@@ -10,10 +10,8 @@ const ASSETS = {
 function init() {
   canvas = document.getElementById("canvas");
   keyboard = new Keyboard();
-
   bindUiButtons();
   bindKeyboardEvents();
-
   showStartScreen();
 }
 
@@ -41,6 +39,20 @@ function startGame() {
   world = new World(canvas, keyboard, onGameEnd);
 }
 
+function startGame() {
+  hideStartScreen();
+  hideEndScreen();
+  showIngameUi();
+  initLevel();
+  world = new World(canvas, keyboard, onGameEnd);
+}
+
+function replayGame() {
+  if (world?.stopLoops) world.stopLoops();
+  startGame();
+}
+
+
 function onGameEnd(won) {
   hideIngameUi();
   showEndScreen(won);
@@ -61,8 +73,11 @@ function showEndScreen(won) {
   const endImg = document.getElementById("endImage");
   endImg.src = won ? ASSETS.win : ASSETS.lose;
   endImg.alt = won ? "You Won" : "Game Over";
-
   document.getElementById("endScreen").classList.add("overlay--show");
+}
+
+function hideEndScreen() {
+  document.getElementById("endScreen").classList.remove("overlay--show");
 }
 
 
@@ -98,3 +113,4 @@ function bindKeyboardEvents() {
     if (e.keyCode === 68) keyboard.D = true;
   });
 }
+
