@@ -241,10 +241,121 @@ h1{
   object-fit: cover;
 }
 
-#btnReplay{
+#endScreen .overlay-card{
+  position: relative;
+  width: 720px;
+  height: 480px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+#endScreen .overlay-preview{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 760px), (max-height: 520px){
+  #endScreen .overlay-card{
+    width: min(92vw, 720px);
+    height: auto;
+    aspect-ratio: 720 / 480;
+  }
+}
+
+#endScreen .overlay-card{
+  position: relative; 
+}
+
+#endScreen .overlay-actions{
   position: absolute;
   top: 14px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 5;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  background: transparent;
+  padding: 0;
+  z-index: 50;
+}
+
+#controlsModal.overlay{
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(0,0,0,.25);
+  backdrop-filter: blur(2px);
+}
+
+#controlsModal.overlay.overlay--show{ display:flex; }
+
+.controls-card{
+  width: min(560px, 92%);
+  border-radius: 18px;
+  padding: 22px 22px 18px;
+  background: #e9c67e;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+  position: relative;
+  border: 2px solid rgba(0,0,0,.12);
+}
+
+.controls-close{
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  color: #2b1d00;
+}
+
+.controls-card h2{
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 32px;
+  letter-spacing: 1px;
+  color: #2b1d00;
+}
+
+.controls-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.controls-col h3{
+  margin: 0 0 10px;
+  font-size: 22px;
+  color: #2b1d00;
+}
+
+.controls-row{
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 6px 0;
+  font-size: 16px;
+  color: #2b1d00;
+}
+
+.controls-row span:first-child{
+  opacity: .95;
+}
+
+.controls-row span:last-child{
+  font-weight: 800;
+}
+
+@media (max-width: 520px){
+  .controls-grid{ grid-template-columns: 1fr; }
+  .controls-card h2{ font-size: 26px; }
 }
