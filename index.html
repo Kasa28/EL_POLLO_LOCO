@@ -63,11 +63,28 @@
   </div>
 
   
-    <div class="instruction">
-    <h2>Arrows Left/Right = Walk</h2>
-    <h2>Arrow Up = Jump</h2>
-    <h2>D= Throw Tabasco</h2>
+<div id="controlsModal" class="overlay">
+  <div class="controls-card" role="dialog" aria-modal="true" aria-labelledby="controlsTitle">
+    <button id="btnCloseControls" class="controls-close" aria-label="Close">✕</button>
+
+    <h2 id="controlsTitle">How to Play</h2>
+
+    <div class="controls-grid">
+      <div class="controls-col">
+        <h3>Movement</h3>
+        <div class="controls-row"><span> ← </span><span>Move Left</span></div>
+        <div class="controls-row"><span> → </span><span>Move Right</span></div>
+        <div class="controls-row"><span> ↑ </span><span>Jump</span></div>
+      </div>
+
+      <div class="controls-col">
+        <h3>Actions</h3>
+        <div class="controls-row"><span>D</span><span>Throw Bottle</span></div>
+        <div class="controls-row"><span>ESC</span><span>Minimize Screen</span></div>
+      </div>
     </div>
+  </div>
+</div>
 
 </div>
 </body>
