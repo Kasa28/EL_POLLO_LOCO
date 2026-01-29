@@ -2,86 +2,111 @@ let canvas;
 let world;
 let keyboard;
 
-const IMG_GAMEOVER = "img/You won, you lost/Game over A.png";
-const IMG_YOUWON   = "img/You won, you lost/You Win A.png";
+const ASSETS = {
+  win: "img/You won, you lost/You won A.png",          
+  lose: "img/9_intro_outro_screens/game_over/game over.png" 
+};
 
 function init() {
   canvas = document.getElementById("canvas");
+
+  const startScreen = document.getElementById("startScreen");
+  const endScreen = document.getElementById("endScreen");
+  const endImage = document.getElementById("endImage");
+
+  const btnStart = document.getElementById("btnStart");
+  const btnControls = document.getElementById("btnControls");
+  const btnRestart = document.getElementById("btnRestart");
+
+  const mobileControls = document.querySelector(".mobile-controls");
+  const instruction = document.querySelector(".instruction");
+
+
+  show(startScreen);
+  hide(endScreen);
+  hideElement(mobileControls);
+
+  keyboard = new Keyboard();
+
+  btnStart.addEventListener("click", () => startGame(startScreen, mobileControls, instruction));
+  btnReplay.addEventListener("click", restartGame);
+  btnControls.addEventListener("click", () => toggleElement(instruction));
+
+  bindKeyboardEvents();
+}
+
+function startGame(startScreen, mobileControls, instruction) {
+  hide(startScreen);
+  hide(instruction);               
+  showElement(mobileControls);
+
   initLevel();
-  keyboard = new Keyboard();        
-  bindKeyboardEvents();           
-  bindUiButtons();           
-  showStartScreen();             
-}
 
-
-function bindUiButtons() {
-  document.getElementById("btnStart").addEventListener("click", startGame);
-
-  document.getElementById("btnRestart").addEventListener("click", () => {
-    location.reload();
-  });
-
-  document.getElementById("btnControls").addEventListener("click", () => {
-    alert("Controls:\n← → Walk\n⬆ / Space Jump\nD / 🍾 Throw");
+  world = new World(canvas, keyboard, (won) => {
+    onGameEnd(won, mobileControls);
   });
 }
 
-function startGame() {
-  hideStartScreen();
-  showIngameUi();
-  world = new World(canvas, keyboard, onGameEnd);
+function onGameEnd(won, mobileControls) {
+  const endScreen = document.getElementById("endScreen");
+  const endImage = document.getElementById("endImage");
 
+  hideElement(mobileControls);
+
+  endImage.src = won ? ASSETS.win : ASSETS.lose;
+  endImage.alt = won ? "You Won" : "Game Over";
+
+  show(endScreen);
 }
 
-function onGameEnd(won) {
-  hideIngameUi();
-  showEndScreen(won);
+function restartGame() {
+  location.reload();
 }
 
-function showStartScreen() {
-  document.getElementById("startScreen").classList.add("overlay--show");
-  document.getElementById("endScreen").classList.remove("overlay--show");
-  hideIngameUi();
+function show(el) {
+  if (!el) return;
+  el.classList.add("overlay--show");
 }
 
-function hideStartScreen() {
-  document.getElementById("startScreen").classList.remove("overlay--show");
+function hide(el) {
+  if (!el) return;
+  el.classList.remove("overlay--show");
 }
 
-function showEndScreen(won) {
-  const endImg = document.getElementById("endImage");
-  endImg.src = won ? IMG_YOUWON : IMG_GAMEOVER;
-
-  document.getElementById("endScreen").classList.add("overlay--show");
+function showElement(el) {
+  if (!el) return;
+  el.style.display = "";
 }
 
-function showIngameUi() {
-  document.querySelector(".mobile-controls").classList.add("mobile-controls--show");
-  document.querySelector(".instruction").classList.add("instruction--show");
+function hideElement(el) {
+  if (!el) return;
+  el.style.display = "none";
 }
 
-function hideIngameUi() {
-  document.querySelector(".mobile-controls").classList.remove("mobile-controls--show");
-  document.querySelector(".instruction").classList.remove("instruction--show");
+function toggleElement(el) {
+  if (!el) return;
+  const isHidden = getComputedStyle(el).display === "none";
+  el.style.display = isHidden ? "" : "none";
 }
 
 function bindKeyboardEvents() {
   window.addEventListener("keyup", (e) => {
-    if (e.keyCode == 39) keyboard.RIGHT = false;
-    if (e.keyCode == 37) keyboard.LEFT = false;
-    if (e.keyCode == 38) keyboard.UP = false;
-    if (e.keyCode == 40) keyboard.DOWN = false;
-    if (e.keyCode == 32) keyboard.SPACE = false;
-    if (e.keyCode == 68) keyboard.D = false;
+    if (!keyboard) return;
+    if (e.keyCode === 39) keyboard.RIGHT = false;
+    if (e.keyCode === 37) keyboard.LEFT = false;
+    if (e.keyCode === 38) keyboard.UP = false;
+    if (e.keyCode === 40) keyboard.DOWN = false;
+    if (e.keyCode === 32) keyboard.SPACE = false;
+    if (e.keyCode === 68) keyboard.D = false;
   });
 
   window.addEventListener("keydown", (e) => {
-    if (e.keyCode == 39) keyboard.RIGHT = true;
-    if (e.keyCode == 37) keyboard.LEFT = true;
-    if (e.keyCode == 38) keyboard.UP = true;
-    if (e.keyCode == 40) keyboard.DOWN = true;
-    if (e.keyCode == 32) keyboard.SPACE = true;
-    if (e.keyCode == 68) keyboard.D = true;
+    if (!keyboard) return;
+    if (e.keyCode === 39) keyboard.RIGHT = true;
+    if (e.keyCode === 37) keyboard.LEFT = true;
+    if (e.keyCode === 38) keyboard.UP = true;
+    if (e.keyCode === 40) keyboard.DOWN = true;
+    if (e.keyCode === 32) keyboard.SPACE = true;
+    if (e.keyCode === 68) keyboard.D = true;
   });
 }

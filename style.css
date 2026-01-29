@@ -1,3 +1,6 @@
+/* =========================
+   Fonts
+========================= */
 @font-face {
   font-family: "Bungee";
   src: url("./fonts/Bungee-Regular.ttf") format("truetype");
@@ -6,300 +9,130 @@
   font-display: swap;
 }
 
+/* =========================
+   Base
+========================= */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
 
 body{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-direction: column;
-    min-height: 100vh;
-    margin: 0;
-    background-image: url('img/bg/bg.png');
-    background-position: center;
-    font-family: "Bungee" , sans-serif;
-}
-
-canvas {
-    background-color: black;
-    display: block;
-}
-
-@media only screen and (max-width: 720px) {
-    canvas {
-        width: 100%;
-    }
-}
-
-@media only screen and (max-height: 480px) {
-
-    h1{
-        display: none;
-    }
-    canvas {
-        height: 100vh;
-    }
-}
-
-
-.instruction{
-    display: flex;
-    font-size: 10px;
-    gap: 20px;
-}
-
-.mobile-controls{
-  display: none;
-  gap: 12px;
-  justify-content: center;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  margin-top: 12px;
+  gap: 14px;
+  padding: 18px 14px;
+  background: url("img/bg/bg.png") center/cover no-repeat fixed;
+  font-family: "Bungee", sans-serif;
 }
 
-.ctrl-btn{
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  border: 0;
-  font-size: 24px;
-  background: rgba(0,0,0,.6);
-  color: #fff;
-  touch-action: none; 
+/* Title */
+h1{
+  margin: 0;
+  text-align: center;
+  letter-spacing: 1px;
+  text-shadow: 0 6px 18px rgba(0,0,0,.25);
 }
 
-@media (max-width: 900px){
-  .mobile-controls{ display: flex; }
-}
-
-.game-wrap{
-  position: relative;
-  width: 720px;          
-  margin: 0 auto;
-}
-
-#canvas{
-  display:block;
-}
-
-.mobile-controls{
-  position:absolute;
-  left:0;
-  right:0;
-  bottom:14px;
-  display:flex;
-  justify-content:space-between;
-  padding:0 18px;
-  z-index:10;
-  pointer-events:none;
-}
-
-.ctrl-left,
-.ctrl-right{
-  display:flex;
-  gap:10px;
-  pointer-events:auto;
-}
-
-.ctrl-btn{
-  width:54px;
-  height:54px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.18);
-  background: rgba(20, 12, 6, .45);
-  backdrop-filter: blur(6px);
-  color:#fff;
-  font-size:22px;
-  line-height:1;
-  box-shadow: 0 10px 22px rgba(0,0,0,.25);
-  touch-action:none;
-  user-select:none;
-}
-
-.ctrl-btn:active{
-  transform: translateY(1px) scale(.98);
-  background: rgba(20, 12, 6, .62);
-}
-
-#btnJump, #btnThrow{
-  width:58px;
-  height:58px;
-  border-radius:16px;
-  font-size:24px;
-}
-
-@media (min-width: 900px){
-  .mobile-controls{ display:none; }
-}
-
-.game-wrap{ width:100%; max-width:720px; }
-#canvas{ width:100%; height:auto; }
-
-.game-wrap{
-  position: relative;
-  width: 720px;
-  max-width: 95vw;
-}
-
-canvas{
-  width: 100%;
-  height: auto;
-  display:block;
-  border-radius: 18px;
-}
-
-/* Overlay Basis */
-.overlay{
-  position:absolute;
-  inset:0;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background: rgba(0,0,0,.25);
-  backdrop-filter: blur(2px);
-  border-radius: 18px;
-}
-
-.overlay--show{ display:flex; }
-
-.overlay-card{
-  width:min(620px, 92%);
-  background: rgba(255,255,255,.12);
-  border: 2px solid rgba(255,255,255,.2);
-  border-radius: 18px;
-  padding: 18px;
-}
-
-.overlay-preview{
-  width:100%;
-  border-radius: 14px;
-  display:block;
-}
-
-.overlay-actions{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  margin-top: 14px;
-}
-
-.ui-btn{
-  border:0;
-  padding: 10px 18px;
-  border-radius: 14px;
-  font-weight:700;
-  cursor:pointer;
-  background:#f5c400;
-}
-
-.ui-btn--ghost{
-  background: rgba(255,255,255,.18);
-}
-
-.mobile-controls{
-  position:absolute;
-  left:0; right:0;
-  bottom: 10px;
-  display:flex;
-  justify-content:space-between;
-  padding: 0 14px;
-  pointer-events:none; 
-}
-
-.ctrl-left, .ctrl-right{
-  display:flex;
-  gap:10px;
-  pointer-events:auto; 
-}
-
-.ctrl-btn{
-  width:56px;
-  height:56px;
-  border:0;
-  border-radius:16px;
-  background: rgba(0,0,0,.35);
-  color:#fff;
-  font-size:22px;
-}
-
+/* =========================
+   Game Wrap (frame)
+========================= */
 .game-wrap{
   position: relative;
   width: min(92vw, 720px);
-  margin: 0 auto;
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 18px 40px rgba(0,0,0,.25);
+  box-shadow: 0 18px 40px rgba(0,0,0,.28);
+  background: rgba(0,0,0,.18);
 }
 
+/* Canvas responsive */
 #canvas{
   width: 100%;
   height: auto;
-  display:block;
+  display: block;
+  background: transparent; /* wichtig: kein schwarzer Rand */
 }
 
+/* Hide title on very low height */
+@media (max-height: 480px){
+  body{ padding: 8px; gap: 8px; }
+  h1{ display: none; }
+}
+
+/* =========================
+   Overlays (Start / End)
+========================= */
 .overlay{
-  position:absolute;
-  inset:0;
-  display:none;               
-  align-items:center;
-  justify-content:center;
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
   background: rgba(0,0,0,.25);
   backdrop-filter: blur(2px);
-  z-index: 50;
 }
 
-.overlay--show{
-  display:flex;                 
-}
+.overlay--show{ display: flex; }
 
 .overlay-card{
-  width: 92%;
-  max-width: 680px;
+  width: min(680px, 92%);
   border-radius: 18px;
-  overflow:hidden;
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,.35);
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(0,0,0,.55);
 }
 
 .overlay-preview{
   width: 100%;
-  height: auto;
-  display:block;
+  display: block;
 }
 
 .overlay-actions{
-  display:flex;
+  display: flex;
+  justify-content: center;
   gap: 14px;
-  justify-content:center;
   padding: 14px;
+  background: rgba(0,0,0,.35);
 }
 
 .ui-btn{
-  padding: 12px 18px;
   border: none;
   border-radius: 14px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 800;
   background: #f5c400;
   color: #2b1d00;
-  font-weight: 800;
-  cursor: pointer;
   box-shadow: 0 6px 0 rgba(0,0,0,.25);
+  transition: transform .08s ease, filter .12s ease;
 }
 
+.ui-btn:active{ transform: translateY(1px); }
+
 .ui-btn--ghost{
-  background: rgba(0,0,0,.25);
+  background: rgba(255,255,255,.14);
   color: #fff;
 }
 
+/* =========================
+   Mobile Controls (in-canvas)
+========================= */
 .mobile-controls{
-  position:absolute;
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 14px;
-  display:flex;
-  justify-content:space-between;
+  display: flex;
+  justify-content: space-between;
   padding: 0 16px;
   z-index: 40;
-  pointer-events:none;
-  opacity: 0;                 
+
+  pointer-events: none;
+  opacity: 0;                 /* hidden by default */
   transform: translateY(8px);
   transition: .2s ease;
 }
@@ -309,33 +142,75 @@ canvas{
   transform: translateY(0);
 }
 
-.ctrl-left, .ctrl-right{
-  display:flex;
+.ctrl-left,
+.ctrl-right{
+  display: flex;
   gap: 12px;
-  pointer-events:auto;
+  pointer-events: auto;
 }
 
 .ctrl-btn{
   width: 58px;
   height: 58px;
-  border: none;
+  border: 1px solid rgba(255,255,255,.18);
   border-radius: 16px;
-  background: rgba(0,0,0,.35);
+  background: rgba(20, 12, 6, .45);
+  backdrop-filter: blur(6px);
   color: #fff;
   font-size: 24px;
-  backdrop-filter: blur(3px);
+  line-height: 1;
+  box-shadow: 0 10px 22px rgba(0,0,0,.25);
+  user-select: none;
+  touch-action: none;
+  cursor: pointer;
+  transition: transform .08s ease, background .12s ease;
 }
 
-.instruction{
-  display:none;                
-  margin-top: 14px;
-  text-align:center;
-}
-.instruction--show{
-  display:block;
+.ctrl-btn:active{
+  transform: translateY(1px) scale(.98);
+  background: rgba(20, 12, 6, .62);
 }
 
+/* Jump/Throw slightly bigger */
+#btnJump,
+#btnThrow{
+  width: 62px;
+  height: 62px;
+  font-size: 26px;
+  border-radius: 18px;
+}
 
+/* Hide mobile controls on desktop */
 @media (min-width: 900px){
-  .mobile-controls{ display:none; }
+  .mobile-controls{ display: none !important; }
+}
+
+/* =========================
+   Instruction
+========================= */
+.instruction{
+  display: none;              /* hidden by default */
+  width: min(92vw, 720px);
+  text-align: center;
+  font-size: 12px;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+}
+
+.instruction h2{
+  margin: 0;
+  font-size: 12px;
+  text-shadow: 0 6px 18px rgba(0,0,0,.25);
+}
+
+.instruction--show{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* On very small screens, keep instruction readable */
+@media (max-width: 520px){
+  .instruction{ font-size: 11px; }
+  .instruction h2{ font-size: 11px; }
 }
