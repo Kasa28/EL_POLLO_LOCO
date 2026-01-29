@@ -15,44 +15,65 @@ class Chicken extends MovableObject {
 
   constructor(x) {
     super().loadImage(this.images_walking[0]);
-    this.x = x;
-    this.loadImages(this.images_walking);
-    this.loadImages(this.images_dead_chicken);
-    this.speed = 0.15 + Math.random() * 0.25;
-    this.animation_chicken();
+    this.setStartPosition(x);
+    this.loadChickenImages();
+    this.setRandomSpeed();
+    this.startChicken();
   }
 
+  setStartPosition(x) {
+    this.x = x;
+  }
+
+  loadChickenImages() {
+    this.loadImages(this.images_walking);
+    this.loadImages(this.images_dead_chicken);
+  }
+
+  setRandomSpeed() {
+    this.speed = 0.15 + Math.random() * 0.25;
+  }
+
+  startChicken() {
+    this.startMoveLeftLoop();
+    this.startWalkAnimationLoop();
+  }
+
+  startMoveLeftLoop() {
+    setInterval(() => this.moveLeftIfAlive(), 1000 / 60);
+  }
+
+  moveLeftIfAlive() {
+    if (this.isDead) return;
+    this.moveLeft(); 
+  }
+
+  startWalkAnimationLoop() {
+    setInterval(() => this.playWalkAnimationIfAlive(), 100);
+  }
+
+  playWalkAnimationIfAlive() {
+    if (this.isDead) return;
+    this.playAnimation(this.images_walking);
+  }
 
   die() {
-  if (this.isDead) return;         
-  this.isDead = true;
-  this.img = this.imageCache[this.images_dead_chicken[0]];
-  this.speed = 0;
-
-  setTimeout(() => {
-    this.isRemoved = true;          
-  }, 1000);
-}
-
-
-animation_chicken() {
-  setInterval(() => {
     if (this.isDead) return;
+    this.setDeadState();
+    this.scheduleRemove();
+  }
 
-    const char = this.world?.character;
-    if (!char) return;
+  setDeadState() {
+    this.isDead = true;
+    this.speed = 0;
+    this.img = this.imageCache[this.images_dead_chicken[0]];
+  }
 
-    const distance = Math.abs(this.x - char.x);
-    const aggroRange = 650; 
+  scheduleRemove() {
+    setTimeout(() => this.removeChicken(), 1000);
+  }
 
-    if (distance < aggroRange) {
-      if (this.x > char.x) this.moveLeft();
-      else this.moveRight();
-    }
-  }, 1000 / 60);
-
-  setInterval(() => {
-    if (!this.isDead) this.playAnimation(this.images_walking);
-  }, 100);
-}
+  removeChicken() {
+    this.isRemoved = true;
+  }
 }
