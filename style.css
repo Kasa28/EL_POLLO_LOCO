@@ -39,3 +39,10 @@ canvas {
         height: 100vh;
     }
 }
+
+
+.instruction{
+    display: flex;
+    font-size: 10px;
+    gap: 20px;
+}
