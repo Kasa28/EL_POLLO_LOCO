@@ -18,60 +18,116 @@ class ThrowableObject extends MovableObject {
     "img/6_salsa_bottle/bottle_rotation/bottle_splash/6_bottle_splash.png"
   ];
 
-  speedX = 10;
-  isSplashed = false;
   groundY = 450;
 
   constructor(x, y, throwRight = true) {
     super().loadImage(this.images_rotation[0]);
     this.loadImages(this.images_rotation);
     this.loadImages(this.images_splash);
+
+    this.setStartPosition(x, y);
+    this.setThrowDirection(throwRight);
+    this.resetThrowPhysics();
+
+    this.startFlying();
+    this.startRotation();
+  }
+
+  setStartPosition(x, y) {
     this.x = x;
     this.y = y;
-    this.speedy;
-    this.throw();
-    this.playRotation();
   }
 
-  throw() {
-  this.isSplashed = false;
-  this.speedy = 18;         
-  const gravity = 1.2;      
-  this.flyInterval = setInterval(() => {
+  setThrowDirection(throwRight) {
+    this.speedX = throwRight ? 10 : -10;
+  }
+
+  resetThrowPhysics() {
+    this.isSplashed = false;
+    this.speedY = 18;
+    this.gravity = 1.2;
+  }
+
+  startFlying() {
+    this.flyInterval = setInterval(() => this.updateFlightStep(), 25);
+  }
+
+  updateFlightStep() {
     if (this.isSplashed) return;
-    this.x += this.speedX;
-    this.y -= this.speedy;
-    this.speedy -= gravity;
-    this.checkGroundHit();
-  }, 25);
-}
-
-  playRotation() {
-    this.rotInterval = setInterval(() => {
-      if (this.isSplashed) return;
-      this.playAnimation(this.images_rotation);
-    }, 80);
+    this.moveHorizontal();
+    this.moveVertical();
+    this.applyGravity();
+    this.trySplashOnGround();
   }
 
-checkGroundHit() {
-  if (this.isSplashed) return;
-  const bottom = this.y + this.height;
-  const fallingDown = this.speedy < 0;   
-  if (fallingDown && bottom >= this.groundY) this.splash();
-}
+  moveHorizontal() {
+    this.x += this.speedX;
+  }
+
+  moveVertical() {
+    this.y -= this.speedY;
+  }
+
+  applyGravity() {
+    this.speedY -= this.gravity;
+  }
+
+  trySplashOnGround() {
+    if (!this.isFallingDown()) return;
+    if (!this.hasHitGround()) return;
+    this.splash();
+  }
+
+  isFallingDown() {
+    return this.speedY < 0;
+  }
+
+  hasHitGround() {
+    const bottom = this.y + this.height;
+    return bottom >= this.groundY;
+  }
+
+  startRotation() {
+    this.rotInterval = setInterval(() => this.updateRotationFrame(), 80);
+  }
+
+  updateRotationFrame() {
+    if (this.isSplashed) return;
+    this.playAnimation(this.images_rotation);
+  }
 
   splash() {
     if (this.isSplashed) return;
     this.isSplashed = true;
+
+    this.stopFlightLoop();
+    this.stopRotationLoop();
+
+    this.startSplashAnimation();
+    this.scheduleRemove();
+  }
+
+  stopFlightLoop() {
     clearInterval(this.flyInterval);
+  }
+
+  stopRotationLoop() {
     clearInterval(this.rotInterval);
+  }
+
+  startSplashAnimation() {
     this.splashInterval = setInterval(() => {
       this.playAnimation(this.images_splash);
     }, 60);
-    setTimeout(() => {
-      clearInterval(this.splashInterval);
-      this.isRemoved = true;
-      this.x = -9999;
-    }, 400);
+  }
+
+  scheduleRemove() {
+    setTimeout(() => this.removeSplash(), 400);
+  }
+
+  removeSplash() {
+    clearInterval(this.splashInterval);
+    this.isRemoved = true;
+    this.x = -9999;
   }
 }
