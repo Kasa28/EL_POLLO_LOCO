@@ -3,11 +3,6 @@ class BottlePickup extends MovableObject {
   height = 80;
   y = 350;
 
-  images_bottles = [
-    "img/6_salsa_bottle/1_salsa_bottle_on_ground.png",
-    "img/6_salsa_bottle/2_salsa_bottle_on_ground.png"
-  ];
-
   constructor(x) {
     super();
     this.loadImages(this.images_bottles);
