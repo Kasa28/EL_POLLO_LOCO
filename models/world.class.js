@@ -1,13 +1,10 @@
 class World {
   camera_x = 0;
-
   throwableObjects = [];
   lastThrow = 0;
-
   gameOver = false;
   tickIntervalId = null;
   rafId = null;
-
   BOTTLE_THROW_COOLDOWN = 500;
   BOSS_FALL_DELAY = 500;
   ending = false;
@@ -17,6 +14,9 @@ class World {
     this.ctx = canvas.getContext("2d");
     this.keyboard = keyboard;
     this.onEnd = onEnd;
+    this.sfx = new GameAudio(bottle_assets.sounds, 0.6);
+    window.addEventListener("pointerdown", () => this.sfx.unlock(), { once: true });
+    window.addEventListener("keydown", () => this.sfx.unlock(), { once: true });
     this.level = level_1;
     this.character = new Character();
     this.statusBarHealth = new StatusBar(images_health, 10, 0, 100);
@@ -261,8 +261,10 @@ removeDeadEnemies() {
       if (!(enemy instanceof Chicken)) return;
       if (enemy.isDead) return;
       if (!bottle.isColliding(enemy)) return;
+      bottle.hasHitEnemy = true;   
       enemy.die();
       bottle.splash();
+      this.sfx.play("breaking")
     });
   }
 
@@ -303,6 +305,7 @@ removeDeadEnemies() {
   bottle.hasHitBoss = true;    
   this.hitBoss(boss);
   bottle.splash();
+   this.sfx.play("breaking")
 }
 
  
