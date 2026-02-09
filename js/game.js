@@ -11,11 +11,17 @@ const ASSETS = {
 function init() {
   canvas = document.getElementById("canvas");
   keyboard = new Keyboard();
-
-  audioManager = new GameAudio(bottle_assets.sounds, 0.6);
+  audioManager = new GameAudio(
+  {
+    ...bottle_assets.sounds,
+    ...CHARACTER_ASSETS.sounds
+  },
+  0.6
+);
   audioManager.startMusic("audio/intro_game.mp3", 0.35);
   setupSoundButton(audioManager);
-
+  window.addEventListener("pointerdown", () => audioManager.unlock(), { once: true });
+  window.addEventListener("keydown", () => audioManager.unlock(), { once: true });
   bindUiButtons();
   bindKeyboardEvents();
   showStartScreen();
