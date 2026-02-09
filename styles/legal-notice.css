@@ -1,0 +1,233 @@
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body{
+  color: rgba(0, 0, 0, 0.9);
+  font-family: monospace, serif;
+  margin: 0 10%;
+  min-height: 100dvh;
+  height: 100dvh;
+  background-image:
+    linear-gradient(rgba(255,255,255,.3), rgba(255,255,255,.3)),
+    url('../img/bg/wüste.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  align-items: center;
+}
+
+.legal-notice {
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.legal-notice p,
+.legal-notice a,
+.legal-notice li {
+  font-size: 18px;
+}
+
+h1{
+  font-size: 84px;
+  font-weight: 400;
+  margin-block-start: 0;
+  margin-block-end: 15px;
+}
+
+h2{
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+
+.legal-notice-content {
+  overflow-y: scroll;
+  scroll-behavior: auto;
+}
+
+.legal-notice-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.legal-notice-content::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+
+.legal-notice-content::-webkit-scrollbar-thumb {
+  background: #8a2206;
+  border: 0px none #ffffff;
+  border-radius: 50px;
+}
+
+.legal-notice-content::-webkit-scrollbar-track {
+  background: #ffaf47;
+  border: 0px none #ffffff;
+  border-radius: 35px;
+}
+
+.sources {
+  height: 150px;
+}
+
+.sources p {
+  margin-block-start: 0em !important;
+  margin-block-end: 2px;
+}
+
+.headline-legal-notice{
+  position: relative;
+}
+
+#back-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  right: 10px;
+  top: 20px;
+  cursor: pointer;
+  border-radius: 30px;
+}
+
+#back-arrow:hover path {
+  fill: #8a2206;
+  scale: 1.1;
+}
+
+.legal-notice .topnav {
+  display: none;
+  position: relative;
+}
+
+.legal-notice .bottomnav {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+@media (max-width: 720px) {
+  body {
+    margin: 0 2%;
+  }
+
+  .legal-notice {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    font-size: 16px;
+  }
+
+  .legal-notice p,
+  .legal-notice a,
+  .legal-notice li {
+    font-size: 17px;
+  }
+
+  .scroll-bar {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .legal-notice-content {
+    height: 105%;
+  }
+
+  .legal-notice .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 12px;
+    gap: 12px;
+  }
+
+  .legal-notice .bottomnav {
+    display: none;
+  }
+}
+
+@media (max-width: 500px) {
+  h1 {
+    font-size: 32px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .legal-notice-content p {
+    margin-block-start: 2px;
+    margin-block-end: 2px;
+  }
+
+  #back-arrow {
+    right: 0px;
+    top: 5px;
+  }
+
+  .scroll-bar {
+    max-height: calc(100dvh - 100px);
+  }
+}
+
+@media screen and (max-width: 1024px) and (max-height: 800px) {
+  h1 {
+    font-size: 36px;
+    margin-block-end: 10px;
+  }
+
+  .legal-notice-content {
+    max-height: calc(100dvh - 80px);
+  }
+
+  .scroll-bar {
+    max-height: calc(100dvh - 80px);
+  }
+
+  #back-arrow {
+    top: 10px;
+  }
+}
+
+#hamburger-menu {
+  display: none;
+  position: absolute;
+  top: 52px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  z-index: 9999;
+}
+
+#hamburger-menu.is-open {
+  display: block;
+}
+
+#hamburger-menu a {
+  display: block;
+  padding: 8px 10px;
+  text-decoration: none;
+  color: #000;
+}
+
+.legal-notice {
+  font-weight: 600;
+}
+
+.legal-notice p,
+.legal-notice a,
+.legal-notice li {
+  font-weight: 600;
+}
+
+.legal-notice h1 {
+  font-weight: 700;
+}
+
+.legal-notice h2 {
+  font-weight: 700;
+}

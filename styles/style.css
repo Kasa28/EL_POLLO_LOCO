@@ -19,7 +19,7 @@ body{
   align-items: center;
   gap: 14px;
   padding: 18px 14px;
-  background: url("img/bg/bg.png") center/cover no-repeat fixed;
+  background: url('img/bg/bg.png') center/cover no-repeat fixed;
   font-family: "Bungee", sans-serif;
   justify-content: center;
 }
