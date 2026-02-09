@@ -3,31 +3,18 @@ class Chicken extends MovableObject {
   height = 100;
   isDead = false;
 
-  images_walking = [
-    'img/3_enemies_chicken/chicken_normal/1_walk/1_w.png',
-    'img/3_enemies_chicken/chicken_normal/1_walk/2_w.png',
-    'img/3_enemies_chicken/chicken_normal/1_walk/3_w.png',
-  ];
-
-  images_dead_chicken = [
-    'img/3_enemies_chicken/chicken_normal/2_dead/dead.png'
-  ];
-
   constructor(x) {
-    super().loadImage(this.images_walking[0]);
-    this.setStartPosition(x);
+    super();
+    this.loadImage(chicken_assets.walking[0]);
+    this.x = x;
     this.loadChickenImages();
     this.setRandomSpeed();
     this.startChicken();
   }
 
-  setStartPosition(x) {
-    this.x = x;
-  }
-
   loadChickenImages() {
-    this.loadImages(this.images_walking);
-    this.loadImages(this.images_dead_chicken);
+    this.loadImages(chicken_assets.walking);
+    this.loadImages(chicken_assets.dead);
   }
 
   setRandomSpeed() {
@@ -40,40 +27,24 @@ class Chicken extends MovableObject {
   }
 
   startMoveLeftLoop() {
-    setInterval(() => this.moveLeftIfAlive(), 1000 / 60);
-  }
-
-  moveLeftIfAlive() {
-    if (this.isDead) return;
-    this.moveLeft(); 
+    setInterval(() => {
+      if (!this.isDead) this.moveLeft();
+    }, 1000 / 60);
   }
 
   startWalkAnimationLoop() {
-    setInterval(() => this.playWalkAnimationIfAlive(), 100);
-  }
-
-  playWalkAnimationIfAlive() {
-    if (this.isDead) return;
-    this.playAnimation(this.images_walking);
+    setInterval(() => {
+      if (!this.isDead) this.playAnimation(chicken_assets.walking);
+    }, 100);
   }
 
   die() {
     if (this.isDead) return;
-    this.setDeadState();
-    this.scheduleRemove();
-  }
 
-  setDeadState() {
     this.isDead = true;
     this.speed = 0;
-    this.img = this.imageCache[this.images_dead_chicken[0]];
-  }
+    this.img = this.imageCache[chicken_assets.dead[0]];
 
-  scheduleRemove() {
-    setTimeout(() => this.removeChicken(), 1000);
-  }
-
-  removeChicken() {
-    this.isRemoved = true;
+    setTimeout(() => (this.isRemoved = true), 1000);
   }
 }
