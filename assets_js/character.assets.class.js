@@ -63,4 +63,17 @@ const CHARACTER_ASSETS = {
   ],
 
   startImage: "img/2_character_pepe/2_walk/W-21.png",
+
+  sounds: {
+    jumping_audio: [
+        "audio/jump.mp3"
+    ],
+    hurt_audio: [
+        "audio/character_hurt.mp3"
+    ],
+
+    walking_audio: [
+        "audio/running-steps.mp3"
+      ],
+  },
 };
