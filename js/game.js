@@ -158,3 +158,13 @@ function bindKeyboardEvents() {
     if (e.keyCode === 68) keyboard.D = true;
   });
 }
+
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("hamburger-menu");
+  const topnav = document.querySelector("#legal-notice .topnav");
+  if (!menu || !topnav) return;
+
+  if (!topnav.contains(e.target)) {
+    menu.classList.remove("is-open");
+  }
+});
