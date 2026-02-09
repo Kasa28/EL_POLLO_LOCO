@@ -85,12 +85,10 @@ class Endboss extends MovableObject {
 
   attack(character) {
     if (!this.canAttack() || this.currentState === "attack") return;
-
     this.currentState = "attack";
     this.lastAttack = Date.now();
-
+    this.world?.sfx?.playOnce("attack_audio", 800);
     character.hit(25);
-
     setTimeout(() => {
       if (!this.isDead) this.currentState = "walk";
     }, 600);
@@ -98,9 +96,7 @@ class Endboss extends MovableObject {
 
   hitBoss(dmg = 30) {
     if (this.isDead) return;
-
     this.energy -= dmg;
-
     if (this.energy <= 0) {
       this.energy = 0;
       this.die();

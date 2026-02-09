@@ -14,11 +14,12 @@ function init() {
   audioManager = new GameAudio(
   {
     ...bottle_assets.sounds,
-    ...CHARACTER_ASSETS.sounds
+    ...CHARACTER_ASSETS.sounds,
+    ...endboss_assets.sounds,
   },
   0.6
 );
-  audioManager.startMusic("audio/intro_game.mp3", 0.35);
+  audioManager.switchMusic("audio/intro_game.mp3", 0.35);
   setupSoundButton(audioManager);
   window.addEventListener("pointerdown", () => audioManager.unlock(), { once: true });
   window.addEventListener("keydown", () => audioManager.unlock(), { once: true });
@@ -50,6 +51,7 @@ function startGame() {
 }
 
 function replayGame() {
+  audioManager.switchMusic("audio/intro_game.mp3", 0.35, true);
   if (world?.stopLoops) world.stopLoops();
   hideEndScreen();
   showIngameUi();
@@ -60,7 +62,7 @@ function replayGame() {
 function goHome() {
   if (world?.stopLoops) world.stopLoops();
   world = null;
-
+  audioManager.switchMusic("audio/intro_game.mp3", 0.35, true);
   hideEndScreen();
   hideIngameUi();
   showStartScreen();
@@ -198,8 +200,8 @@ function setupSoundButton(audio) {
 
   btn.addEventListener("click", (e) => {
     e.preventDefault();
-    audio.unlock();   // wichtig für Browser-Audio
-    audio.toggle();   // macht Musik an/aus + enabled speichern
+    audio.unlock();   
+    audio.toggle();  
     render();
   });
 }

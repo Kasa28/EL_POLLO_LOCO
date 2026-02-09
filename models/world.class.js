@@ -9,12 +9,12 @@ class World {
   BOSS_FALL_DELAY = 500;
   ending = false;
 
-  constructor(canvas, keyboard, onEnd, audioManager) {
+  constructor(canvas, keyboard, onEnd, sfx) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.keyboard = keyboard;
     this.onEnd = onEnd;
-    this.sfx = audioManager;
+    this.sfx = sfx;
     this.level = level_1;
     this.character = new Character();
     this.statusBarHealth = new StatusBar(statusbar_assets.health, 10, 0, 100);
@@ -276,6 +276,7 @@ removeDeadEnemies() {
     if (boss.isDead || boss.isActive) return;
     if (!this.isBossTriggerReached(boss)) return;
     boss.setActive();
+    this.sfx.switchMusic("audio/endboss.mp3", 0.35, true);
     this.statusBarBoss.setPercentage(boss.energy);
   }
 
@@ -349,6 +350,9 @@ removeDeadEnemies() {
 finishGame(won) {
   if (this.gameOver || this.ending) return;
   this.ending = true; 
+  this.sfx?.sopAllSfx();
+  if (won) this.sfx.switchMusic("audio/you_win.mp3", 0.45, false);
+  else this.sfx.switchMusic("audio/game_over.mp3", 0.45, false);
   setTimeout(() => {
     this.gameOver = true;
     this.stopLoops();
