@@ -7,12 +7,11 @@ class GameAudio {
 
     this.music = null;
     this.musicVolume = 0.35;
+    this.cooldowns = {};
   }
 
   unlock() {
     this.unlocked = true;
-
-    // wenn schon enabled und Music existiert -> starten
     if (this.enabled && this.music) {
       this.music.play().catch(() => {});
     }
@@ -23,8 +22,6 @@ class GameAudio {
     this.music = new Audio(src);
     this.music.loop = true;
     this.music.volume = this.musicVolume;
-
-    // falls schon entsperrt und enabled -> starten
     if (this.enabled && this.unlocked) {
       this.music.play().catch(() => {});
     }
@@ -33,8 +30,6 @@ class GameAudio {
   toggle() {
     this.enabled = !this.enabled;
     localStorage.setItem("soundEnabled", String(this.enabled));
-
-    // Musik an/aus
     if (!this.music) return;
 
     if (this.enabled) {
@@ -55,4 +50,16 @@ class GameAudio {
     a.volume = this.volume;
     a.play().catch(() => {});
   }
+
+  playOnce(groupName, cooldown = 200) {
+  if (!this.enabled || !this.unlocked) return;
+
+  const now = Date.now();
+  const last = this.cooldowns[groupName] || 0;
+
+  if (now - last < cooldown) return;
+
+  this.cooldowns[groupName] = now;
+  this.play(groupName);
+}
 }

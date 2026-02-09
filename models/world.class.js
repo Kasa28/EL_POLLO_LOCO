@@ -9,7 +9,7 @@ class World {
   BOSS_FALL_DELAY = 500;
   ending = false;
 
-  constructor(canvas, keyboard, onEnd) {
+  constructor(canvas, keyboard, onEnd, audioManager) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.keyboard = keyboard;
@@ -206,6 +206,7 @@ removeDeadEnemies() {
   damagePlayer() {
     this.character.hit();
     this.statusBarHealth.setPercentage(this.character.energy);
+    this.sfx.playOnce("hurt_audio", 500);
   }
 
   isStompHit(enemy) {
@@ -354,23 +355,4 @@ finishGame(won) {
     if (typeof this.onEnd === "function") this.onEnd(won);
   }, 400);
 }
-
-setupSoundButton() {
-  const btn = document.getElementById("btnSound");
-  const icon = document.getElementById("soundIcon");
-  if (!btn || !icon) return;
-
-  const render = () => {
-    icon.src = this.sfx.enabled ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
-  };
-
-  render();
-
-  btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    this.sfx.unlock(); 
-    this.sfx.toggle();
-    render();
-  });
-}
-}
+};
