@@ -167,6 +167,7 @@ removeDeadEnemies() {
   const y = this.character.y + 120;
   const bottle = new ThrowableObject(x, y, throwRight);
   this.throwableObjects.push(bottle);
+  this.sfx.play("throw");
 }
 
   useOneBottle() {
@@ -217,11 +218,11 @@ removeDeadEnemies() {
 
   collectCoins() {
     if (!this.level.coins) return;
-
     this.level.coins = this.level.coins.filter(coin => {
       if (!this.character.isColliding(coin)) return true;
       this.character.coins++;
       this.statusBarCoins.setPercentage((this.character.coins / 10) * 100);
+      this.sfx.play("collect");
       return false;
     });
   }
@@ -233,6 +234,8 @@ removeDeadEnemies() {
       if (!this.character.isColliding(bottle)) return true;
       this.character.bottles++;
       this.updateBottleBar();
+      this.sfx.play("collect");
+
       return false;
     });
   }
@@ -365,7 +368,7 @@ setupSoundButton() {
 
   btn.addEventListener("click", (e) => {
     e.preventDefault();
-    this.sfx.unlock(); // wichtig: Audio darf erst nach User-Klick
+    this.sfx.unlock(); 
     this.sfx.toggle();
     render();
   });
