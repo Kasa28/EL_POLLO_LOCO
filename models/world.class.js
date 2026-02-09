@@ -19,10 +19,11 @@ class World {
     window.addEventListener("keydown", () => this.sfx.unlock(), { once: true });
     this.level = level_1;
     this.character = new Character();
-    this.statusBarHealth = new StatusBar(images_health, 10, 0, 100);
-    this.statusBarCoins  = new StatusBar(images_coins, 10, 60, 0);
-    this.statusBarBottle = new StatusBar(images_bootles, 10, 120, 0);
-    this.statusBarBoss   = new StatusBar(images_boss, 480, 0, 0);
+    this.statusBarHealth = new StatusBar(statusbar_assets.health, 10, 0, 100);
+    this.statusBarCoins  = new StatusBar(statusbar_assets.coins, 10, 60, 0);
+    this.statusBarBottle = new StatusBar(statusbar_assets.bottles, 10, 120, 0);
+    this.statusBarBoss   = new StatusBar(statusbar_assets.boss, 480, 0, 0);
+
     this.linkWorldToObjects();
     this.startLoops();
   }
