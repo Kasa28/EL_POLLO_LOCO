@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Bungee";
-  src: url("./fonts/Bungee-Regular.ttf") format("truetype");
+  src: url("../fonts/Bungee-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -19,7 +19,7 @@ body{
   align-items: center;
   gap: 14px;
   padding: 18px 14px;
-  background: url('img/bg/bg.png') center/cover no-repeat fixed;
+  background: url('../img/bg/wüste.png') center/cover no-repeat fixed;
   font-family: "Bungee", sans-serif;
   justify-content: center;
 }
@@ -209,4 +209,69 @@ h1{
   padding: 0;
   background: transparent;
   z-index: 5;
+}
+
+#legal-notice .topnav {
+  display: none !important;
+}
+
+
+#legal-notice .bottomnav {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+}
+@media (max-width: 720px) {
+  #legal-notice .bottomnav {
+    display: none !important;
+  }
+
+  #legal-notice .topnav {
+    display: flex !important;
+    justify-content: flex-end;
+    padding: 12px;
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+  }
+
+  #legal-notice .topnav > div {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,.85);
+    box-shadow: 0 10px 25px rgba(0,0,0,.18);
+    cursor: pointer;
+  }
+
+  #legal-notice .topnav svg {
+    width: 26px;
+    height: 20px;
+    display: block;
+  }
+}
+
+#legal-notice a {
+  text-decoration: none !important;
+  color: rgba(0,0,0,.9);
+  font-family: "Bungee", sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+#legal-notice a:hover {
+  text-decoration: none !important;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  #legal-notice a {
+    font-size: 18px;
+  }
 }
