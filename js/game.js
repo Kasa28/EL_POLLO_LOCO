@@ -1,6 +1,7 @@
 let canvas;
 let world;
 let keyboard;
+let audioManager;
 
 const ASSETS = {
   win:  "img/You won, you lost/You won A.png",
@@ -10,6 +11,11 @@ const ASSETS = {
 function init() {
   canvas = document.getElementById("canvas");
   keyboard = new Keyboard();
+
+  audioManager = new GameAudio(bottle_assets.sounds, 0.6);
+  audioManager.startMusic("audio/intro_game.mp3", 0.35);
+  setupSoundButton(audioManager);
+
   bindUiButtons();
   bindKeyboardEvents();
   showStartScreen();
@@ -34,7 +40,7 @@ function startGame() {
   hideEndScreen();
   showIngameUi();
   initLevel();
-  world = new World(canvas, keyboard, onGameEnd);
+  world = new World(canvas, keyboard, onGameEnd, audioManager);
 }
 
 function replayGame() {
@@ -42,7 +48,7 @@ function replayGame() {
   hideEndScreen();
   showIngameUi();
   initLevel();
-  world = new World(canvas, keyboard, onGameEnd);
+  world = new World(canvas, keyboard, onGameEnd, audioManager);
 }
 
 function goHome() {
@@ -168,3 +174,26 @@ document.addEventListener("click", (e) => {
     menu.classList.remove("is-open");
   }
 });
+
+function setupSoundButton(audio) {
+  const btn = document.getElementById("btnSound");
+  const icon = document.getElementById("soundIcon");
+  if (!btn || !icon) return;
+
+  const render = () => {
+    icon.src = audio.enabled ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
+  };
+
+  const unlockOnce = () => audio.unlock();
+  window.addEventListener("pointerdown", unlockOnce, { once: true });
+  window.addEventListener("keydown", unlockOnce, { once: true });
+
+  render();
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    audio.unlock();   // wichtig für Browser-Audio
+    audio.toggle();   // macht Musik an/aus + enabled speichern
+    render();
+  });
+}

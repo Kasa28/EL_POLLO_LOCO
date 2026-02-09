@@ -14,16 +14,13 @@ class World {
     this.ctx = canvas.getContext("2d");
     this.keyboard = keyboard;
     this.onEnd = onEnd;
-    this.sfx = new GameAudio(bottle_assets.sounds, 0.6);
-    window.addEventListener("pointerdown", () => this.sfx.unlock(), { once: true });
-    window.addEventListener("keydown", () => this.sfx.unlock(), { once: true });
+    this.sfx = audioManager;
     this.level = level_1;
     this.character = new Character();
     this.statusBarHealth = new StatusBar(statusbar_assets.health, 10, 0, 100);
     this.statusBarCoins  = new StatusBar(statusbar_assets.coins, 10, 60, 0);
     this.statusBarBottle = new StatusBar(statusbar_assets.bottles, 10, 120, 0);
     this.statusBarBoss   = new StatusBar(statusbar_assets.boss, 480, 0, 0);
-
     this.linkWorldToObjects();
     this.startLoops();
   }
@@ -353,5 +350,24 @@ finishGame(won) {
     this.stopLoops();
     if (typeof this.onEnd === "function") this.onEnd(won);
   }, 400);
+}
+
+setupSoundButton() {
+  const btn = document.getElementById("btnSound");
+  const icon = document.getElementById("soundIcon");
+  if (!btn || !icon) return;
+
+  const render = () => {
+    icon.src = this.sfx.enabled ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
+  };
+
+  render();
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    this.sfx.unlock(); // wichtig: Audio darf erst nach User-Klick
+    this.sfx.toggle();
+    render();
+  });
 }
 }
