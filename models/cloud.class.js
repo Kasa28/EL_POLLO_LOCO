@@ -2,14 +2,25 @@ class Cloud extends MovableObject {
   y = 20;
   width = 450;
   height = 250;
+  static LEVEL_END = 4000;     
+  static SPAWN_GAP = 350;     
+  static nextX = 0;
 
   constructor() {
     super();
     const img = cloud_assets.images[Math.floor(Math.random() * cloud_assets.images.length)];
     this.loadImage(img);
-    this.x = Math.random() * 500;
+    this.x = Cloud.spawnX();
     this.speed = 0.2 + Math.random() * 0.3;
     this.startMoving();
+  }
+
+  static spawnX() {
+    if (Cloud.nextX === 0) Cloud.nextX = Math.random() * 400;
+    const jitter = (Math.random() - 0.5) * 180; 
+    const x = Cloud.nextX + jitter;
+    Cloud.nextX += Cloud.SPAWN_GAP; 
+    return x;
   }
 
   startMoving() {
@@ -18,5 +29,8 @@ class Cloud extends MovableObject {
 
   updateMove() {
     this.moveLeft();
+    if (this.x < -this.width) {
+      this.x = Cloud.LEVEL_END + Math.random() * 500;
+    }
   }
 }

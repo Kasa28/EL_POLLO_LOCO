@@ -14,9 +14,25 @@ function initLevel() {
       new Chicken(2500),
       new Endboss(3000)
     ],
+
     [
-      new Cloud()
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
+      new Cloud(),
     ],
+
     [
       new BackgroundObject('img/5_background/layers/air.png', -719),
       new BackgroundObject('img/5_background/layers/3_third_layer/2.png', -719),
