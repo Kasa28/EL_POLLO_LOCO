@@ -1,12 +1,10 @@
 class World {
   camera_x = 0;
   throwableObjects = [];
-  lastThrow = 0;
   gameOver = false;
   ending = false;
   tickIntervalId = null;
   rafId = null;
-  BOTTLE_THROW_COOLDOWN = 500;
   MAX_BOTTLES = 6;
   MAX_COINS = 6;
   MAX_HEALTH = 6;
@@ -35,13 +33,12 @@ class World {
   }
 
   initGameObjects() {
-    this.character = new Character(this.sfx);
+    this.character = new Character(this.sfx); 
   }
 
   linkWorldToObjects() {
     this.character.world = this;
     this.character.start();
-
     this.level.enemies?.forEach(e => (e.world = this));
     const boss = this.getBoss();
     if (boss) boss.world = this;
@@ -83,7 +80,6 @@ class World {
 
   updateTick() {
     this.handleEnemyCollisions();
-    this.handleThrowing();
     this.collectCoins();
     this.collectBottles();
     this.stompChicken();
@@ -98,11 +94,10 @@ class World {
   }
 
   updateHealthBar() {
-  const hp = Math.max(0, Math.min(this.MAX_HEALTH, this.character.energy));
-  this.character.energy = hp;
-  this.statusBarHealth.setPercentage((hp / this.MAX_HEALTH) * 100);
-}
-
+    const hp = Math.max(0, Math.min(this.MAX_HEALTH, this.character.energy));
+    this.character.energy = hp;
+    this.statusBarHealth.setPercentage((hp / this.MAX_HEALTH) * 100);
+  }
 
   updateCoinBar() {
     const c = Math.max(0, Math.min(this.MAX_COINS, this.character.coins));
@@ -113,7 +108,6 @@ class World {
   updateBottleBar() {
     const b = Math.max(0, Math.min(this.MAX_BOTTLES, this.character.bottles));
     this.character.bottles = b;
-
     const pct = (b / this.MAX_BOTTLES) * 100;
     this.statusBarBottle.setPercentage(pct);
   }
@@ -191,35 +185,6 @@ class World {
     this.ctx.restore();
   }
 
-  handleThrowing() {
-    if (!this.canThrowBottle()) return;
-    this.spawnBottle();
-    this.useOneBottle();
-    this.lastThrow = Date.now();
-  }
-
-  canThrowBottle() {
-    const cooldownReady = Date.now() - this.lastThrow > this.BOTTLE_THROW_COOLDOWN;
-    return this.keyboard.D && cooldownReady && this.character.bottles > 0;
-  }
-
-  spawnBottle() {
-    const throwRight = !this.character.otherDirection;
-    const x = throwRight ? this.character.x + 100 : this.character.x - 20;
-    const y = this.character.y + 120;
-
-    const bottle = new ThrowableObject(x, y, throwRight, this.sfx);
-    bottle.world = this;
-
-    this.throwableObjects.push(bottle);
-    this.sfx.playThrow();
-  }
-
-  useOneBottle() {
-    this.character.bottles = Math.max(0, this.character.bottles - 1);
-    this.updateBottleBar();
-  }
-
   handleEnemyCollisions() {
     this.level.enemies?.forEach(enemy => this.handleSingleEnemyCollision(enemy));
   }
@@ -227,7 +192,6 @@ class World {
   handleSingleEnemyCollision(enemy) {
     if (!enemy || enemy.isRemoved) return;
     if (!this.character.isColliding(enemy)) return;
-
     if (enemy instanceof Chicken) return this.handleChickenTouch(enemy);
     return this.handleOtherEnemyTouch(enemy);
   }
@@ -286,7 +250,6 @@ class World {
       if (enemy.isDead) return;
       if (!this.character.isColliding(enemy)) return;
       if (!this.isStompHit(enemy)) return;
-
       enemy.die();
       this.character.speedY = 15;
     });
