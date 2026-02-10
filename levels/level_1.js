@@ -63,10 +63,6 @@ function initLevel() {
       new BottlePickup(),
       new BottlePickup(),
       new BottlePickup(),
-      new BottlePickup(),
-      new BottlePickup(),
-      new BottlePickup(),
-      new BottlePickup(),
     ],
 
   );

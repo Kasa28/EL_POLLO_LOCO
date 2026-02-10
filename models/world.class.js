@@ -2,11 +2,16 @@ class World {
   camera_x = 0;
   throwableObjects = [];
   lastThrow = 0;
+
   gameOver = false;
   ending = false;
+
   tickIntervalId = null;
   rafId = null;
+
   BOTTLE_THROW_COOLDOWN = 500;
+  MAX_BOTTLES = 6;
+  MAX_COINS = 10;
 
   constructor(canvas, keyboard, onEnd, sfx) {
     this.canvas = canvas;
@@ -14,10 +19,18 @@ class World {
     this.keyboard = keyboard;
     this.onEnd = onEnd;
     this.sfx = sfx;
+
     this.level = level_1;
+
     this.initHud();
     this.initGameObjects();
     this.linkWorldToObjects();
+
+    // ✅ Bars initial korrekt setzen
+    this.updateHealthBar();
+    this.updateCoinBar();
+    this.updateBottleBar();
+
     this.startLoops();
   }
 
@@ -35,6 +48,7 @@ class World {
   linkWorldToObjects() {
     this.character.world = this;
     this.character.start();
+
     this.level.enemies?.forEach(e => (e.world = this));
     const boss = this.getBoss();
     if (boss) boss.world = this;
@@ -68,24 +82,21 @@ class World {
   }
 
   stopLoops() {
-    clearInterval(this.tickIntervalId);
+    if (this.tickIntervalId) clearInterval(this.tickIntervalId);
     if (this.rafId) cancelAnimationFrame(this.rafId);
     this.tickIntervalId = null;
     this.rafId = null;
   }
 
   updateTick() {
-    const steps = [
-      () => this.handleEnemyCollisions(),
-      () => this.handleThrowing(),
-      () => this.collectCoins(),
-      () => this.collectBottles(),
-      () => this.stompChicken(),
-      () => this.activateBossIfNear(),
-      () => this.updateBossBar(),
-      () => this.updateHealthBar(),
-    ];
-    steps.forEach(fn => fn());
+    this.handleEnemyCollisions();
+    this.handleThrowing();
+    this.collectCoins();
+    this.collectBottles();
+    this.stompChicken();
+    this.activateBossIfNear();
+    this.updateBossBar();
+    this.updateHealthBar();
   }
 
   cleanupAfterTick() {
@@ -93,20 +104,37 @@ class World {
     this.removeInvisibleBottles();
   }
 
+  // ---------- HUD Updates ----------
   updateHealthBar() {
+    // energy ist bei dir 0..100 -> direkt ok
     this.statusBarHealth.setPercentage(this.character.energy);
   }
 
+  updateCoinBar() {
+    const c = Math.max(0, Math.min(this.MAX_COINS, this.character.coins));
+    this.character.coins = c;
+    this.statusBarCoins.setPercentage((c / this.MAX_COINS) * 100);
+  }
+
+  updateBottleBar() {
+    const b = Math.max(0, Math.min(this.MAX_BOTTLES, this.character.bottles));
+    this.character.bottles = b;
+
+    const pct = (b / this.MAX_BOTTLES) * 100;
+    this.statusBarBottle.setPercentage(pct);
+  }
+
   removeDeadEnemies() {
-    this.level.enemies = this.level.enemies.filter(
+    this.level.enemies = (this.level.enemies || []).filter(
       e => (e instanceof Endboss) || !e.isRemoved
     );
   }
 
   removeInvisibleBottles() {
-  this.throwableObjects = this.throwableObjects.filter(b => !b.isRemoved);
- }
+    this.throwableObjects = this.throwableObjects.filter(b => !b.isRemoved);
+  }
 
+  // ---------- Drawing ----------
   drawFrame() {
     this.clearCanvas();
     this.drawWorld();
@@ -170,7 +198,7 @@ class World {
     this.ctx.restore();
   }
 
-
+  // ---------- Throwing ----------
   handleThrowing() {
     if (!this.canThrowBottle()) return;
     this.spawnBottle();
@@ -187,22 +215,20 @@ class World {
     const throwRight = !this.character.otherDirection;
     const x = throwRight ? this.character.x + 100 : this.character.x - 20;
     const y = this.character.y + 120;
+
     const bottle = new ThrowableObject(x, y, throwRight, this.sfx);
     bottle.world = this;
+
     this.throwableObjects.push(bottle);
     this.sfx.playThrow();
   }
 
   useOneBottle() {
-    this.character.bottles--;
+    this.character.bottles = Math.max(0, this.character.bottles - 1);
     this.updateBottleBar();
   }
 
-  updateBottleBar() {
-    this.statusBarBottle.setPercentage((this.character.bottles / 10) * 100);
-  }
-
-
+  // ---------- Collisions ----------
   handleEnemyCollisions() {
     this.level.enemies?.forEach(enemy => this.handleSingleEnemyCollision(enemy));
   }
@@ -239,12 +265,17 @@ class World {
     return fallingDown && charBottom < enemyTop + 30;
   }
 
+  // ---------- Collect ----------
   collectCoins() {
     if (!this.level.coins) return;
+
     this.level.coins = this.level.coins.filter(coin => {
       if (!this.character.isColliding(coin)) return true;
+
       this.character.coins++;
-      this.statusBarCoins.setPercentage((this.character.coins / 10) * 100);
+      this.character.coins = Math.min(this.character.coins, this.MAX_COINS);
+
+      this.updateCoinBar();
       this.sfx.playCollect();
       return false;
     });
@@ -252,9 +283,14 @@ class World {
 
   collectBottles() {
     if (!this.level.bottles) return;
+
     this.level.bottles = this.level.bottles.filter(bottle => {
       if (!this.character.isColliding(bottle)) return true;
+
+      // ✅ sauber clampen
       this.character.bottles++;
+      this.character.bottles = Math.min(this.character.bottles, this.MAX_BOTTLES);
+
       this.updateBottleBar();
       this.sfx.playCollect();
       return false;
@@ -267,17 +303,19 @@ class World {
       if (enemy.isDead) return;
       if (!this.character.isColliding(enemy)) return;
       if (!this.isStompHit(enemy)) return;
+
       enemy.die();
       this.character.speedY = 15;
     });
   }
 
-
+  // ---------- Boss ----------
   activateBossIfNear() {
     const boss = this.getBoss();
     if (!boss) return;
     if (boss.isDead || boss.isActive) return;
     if (!this.isBossTriggerReached(boss)) return;
+
     boss.setActive();
     this.sfx.musicBoss();
     this.statusBarBoss.setPercentage(boss.energy);
@@ -293,7 +331,7 @@ class World {
     this.statusBarBoss.setPercentage(boss.energy);
   }
 
-
+  // ---------- End Game ----------
   checkEndConditions() {
     if (this.isPlayerDead()) return this.finishGame(false);
     if (this.isBossRemovedAfterDeath()) return this.finishGame(true);
@@ -310,10 +348,14 @@ class World {
 
   finishGame(won) {
     if (this.gameOver || this.ending) return;
+
     this.ending = true;
+
     const boss = this.getBoss();
     boss?.stop?.();
+
     this.sfx.endGame(won);
+
     setTimeout(() => {
       this.gameOver = true;
       this.stopLoops();
