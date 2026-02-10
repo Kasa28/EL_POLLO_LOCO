@@ -1,4 +1,3 @@
-// models/endboss.class.js
 class Endboss extends MovableObject {
   height = 400;
   width = 250;
@@ -12,6 +11,9 @@ class Endboss extends MovableObject {
   speed = 1.2;
   lastAttack = 0;
   attackCooldown = 1200;
+  spriteIntervalId = null;
+  logicIntervalId = null;
+
   constructor() {
     super();
     this.x = 2500;
@@ -29,36 +31,39 @@ class Endboss extends MovableObject {
   }
 
   animate() {
-    setInterval(() => this.animateSprite(), 160);
-    setInterval(() => this.updateMovementAndAttack(), 1000 / 60);
+    this.stop();
+    this.spriteIntervalId = setInterval(() => this.animateSprite(), 160);
+    this.logicIntervalId = setInterval(() => this.updateMovementAndAttack(), 1000 / 60);
+  }
+
+  stop() {
+    if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
+    if (this.logicIntervalId) clearInterval(this.logicIntervalId);
+    this.spriteIntervalId = null;
+    this.logicIntervalId = null;
   }
 
   animateSprite() {
     if (this.isDead) return this.playAnimation(endboss_assets.dead);
     if (this.isHurtBoss) return this.playAnimation(endboss_assets.hurt);
     if (!this.isActive) return this.playAnimation(endboss_assets.walking);
-
     if (this.currentState === "alert") return this.playAnimation(endboss_assets.alert);
     if (this.currentState === "attack") return this.playAnimation(endboss_assets.attack);
-
     return this.playAnimation(endboss_assets.walking);
   }
 
   updateMovementAndAttack() {
-    if (!this.isActive || this.isDead || !this.world) return;
-
+    if (!this.world) return;
+    if (this.world.ending || this.world.gameOver) return; 
+    if (!this.isActive || this.isDead) return;
     const character = this.world.character;
     const distance = Math.abs(character.x - this.x);
-
     if (this.currentState === "alert") return;
-
     if (distance < 95) {
       this.attack(character);
       return;
     }
-
     this.currentState = "walk";
-
     if (character.x < this.x) {
       this.otherDirection = false;
       this.x -= this.speed;
@@ -70,10 +75,8 @@ class Endboss extends MovableObject {
 
   setActive() {
     if (this.isActive) return;
-
     this.isActive = true;
     this.currentState = "alert";
-
     setTimeout(() => {
       if (!this.isDead) this.currentState = "walk";
     }, 1200);
@@ -84,7 +87,10 @@ class Endboss extends MovableObject {
   }
 
   attack(character) {
+    if (!this.world) return;
+    if (this.world.ending || this.world.gameOver) return; // ✅ auch hier absichern
     if (!this.canAttack() || this.currentState === "attack") return;
+    if (this.isDead) return;
     this.currentState = "attack";
     this.lastAttack = Date.now();
     this.world?.sfx?.playOnce("attack_audio", 800);
@@ -102,13 +108,14 @@ class Endboss extends MovableObject {
       this.die();
       return;
     }
-
     this.isHurtBoss = true;
     setTimeout(() => (this.isHurtBoss = false), 350);
   }
 
   die() {
+    if (this.isDead) return;
     this.isDead = true;
+    this.stop();
     setTimeout(() => (this.isRemoved = true), 1000);
   }
 }
