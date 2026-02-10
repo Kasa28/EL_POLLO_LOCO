@@ -7,82 +7,108 @@ class GameAudio {
     this.music = null;
     this.musicVolume = 0.35;
     this.cooldowns = {};
-    this.activeSfx = new Set(); 
+    this.activeSfx = new Set();
   }
 
   unlock() {
     this.unlocked = true;
+    this.tryPlayMusic();
+  }
 
-    if (this.enabled && this.music) {
-      this.music.play().catch(() => {});
-    }
+  tryPlayMusic() {
+    if (!this.enabled || !this.unlocked || !this.music) return;
+    this.music.play().catch(() => {});
   }
 
   switchMusic(src, volume = this.musicVolume, loop = true) {
-    if (this.music) {
-      this.music.pause();
-      this.music.currentTime = 0;
-    }
+    this.stopMusic();
+    this.music = this.createMusic(src, volume, loop);
+    this.tryPlayMusic();
+  }
 
+  stopMusic() {
+    if (!this.music) return;
+    this.music.pause();
+    this.music.currentTime = 0;
+  }
+
+  createMusic(src, volume, loop) {
     this.musicVolume = volume;
-    this.music = new Audio(src);
-    this.music.loop = loop;
-    this.music.volume = volume;
-    if (this.enabled && this.unlocked) {
-      this.music.play().catch(() => {});
-    }
+    const a = new Audio(src);
+    a.loop = loop;
+    a.volume = volume;
+    return a;
   }
 
   toggle() {
     this.enabled = !this.enabled;
     localStorage.setItem("soundEnabled", String(this.enabled));
-    if (!this.music) {
-      if (!this.enabled) this.stopAllSfx();
-      return;
-    }
+    this.applyEnabledState();
+  }
 
-    if (this.enabled) {
-      if (this.unlocked) this.music.play().catch(() => {});
-    } else {
-      this.music.pause();
-      this.music.currentTime = 0;
-      this.stopAllSfx(); 
-    }
+  applyEnabledState() {
+    if (this.enabled) return this.tryPlayMusic();
+    this.stopMusic();
+    this.stopAllSfx();
   }
 
   play(groupName) {
-    if (!this.enabled || !this.unlocked) return;
+    if (!this.canPlay()) return;
+    const src = this.pickRandomSrc(groupName);
+    if (!src) return;
+    const a = this.createSfx(src);
+    this.trackSfx(a);
+    a.play().catch(() => {});
+  }
+  canPlay() {
+    return this.enabled && this.unlocked;
+  }
+
+  pickRandomSrc(groupName) {
     const list = this.groups[groupName];
-    if (!list || list.length === 0) return;
-    const src = list[Math.floor(Math.random() * list.length)];
+    if (!list || list.length === 0) return null;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  createSfx(src) {
     const a = new Audio(src);
     a.volume = this.volume;
+    return a;
+  }
+
+  trackSfx(a) {
     this.activeSfx.add(a);
     const cleanup = () => this.activeSfx.delete(a);
     a.addEventListener("ended", cleanup, { once: true });
     a.addEventListener("pause", cleanup, { once: true });
-
-    a.play().catch(() => {});
   }
 
   playOnce(groupName, cooldown = 200) {
-    if (!this.enabled || !this.unlocked) return;
-
-    const now = Date.now();
-    const last = this.cooldowns[groupName] || 0;
-    if (now - last < cooldown) return;
-
-    this.cooldowns[groupName] = now;
+    if (!this.canPlay()) return;
+    if (!this.cooldownReady(groupName, cooldown)) return;
+    this.setCooldown(groupName);
     this.play(groupName);
   }
 
+  cooldownReady(groupName, cooldown) {
+    const now = Date.now();
+    const last = this.cooldowns[groupName] || 0;
+    return now - last >= cooldown;
+  }
+
+  setCooldown(groupName) {
+    this.cooldowns[groupName] = Date.now();
+  }
+
   stopAllSfx() {
-    this.activeSfx.forEach(a => {
-      try {
-        a.pause();
-        a.currentTime = 0;
-      } catch {}
-    });
+    this.activeSfx.forEach(a => this.stopAudio(a));
     this.activeSfx.clear();
+  }
+
+  stopAudio(a) {
+    try {
+      a.pause();
+      a.currentTime = 0;
+    } catch {}
   }
 }
