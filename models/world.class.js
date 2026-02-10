@@ -14,7 +14,6 @@ class World {
     this.keyboard = keyboard;
     this.onEnd = onEnd;
     this.sfx = sfx;
-
     this.level = level_1;
     this.initHud();
     this.initGameObjects();
@@ -36,7 +35,6 @@ class World {
   linkWorldToObjects() {
     this.character.world = this;
     this.character.start();
-
     this.level.enemies?.forEach(e => (e.world = this));
     const boss = this.getBoss();
     if (boss) boss.world = this;
@@ -83,10 +81,8 @@ class World {
       () => this.collectCoins(),
       () => this.collectBottles(),
       () => this.stompChicken(),
-      () => this.bottleHitsChicken(),
       () => this.activateBossIfNear(),
       () => this.updateBossBar(),
-      () => this.bottleHitsBoss(),
       () => this.updateHealthBar(),
     ];
     steps.forEach(fn => fn());
@@ -108,8 +104,8 @@ class World {
   }
 
   removeInvisibleBottles() {
-    this.throwableObjects = this.throwableObjects.filter(b => b.x > -1000);
-  }
+  this.throwableObjects = this.throwableObjects.filter(b => !b.isRemoved);
+ }
 
   drawFrame() {
     this.clearCanvas();
@@ -191,8 +187,8 @@ class World {
     const throwRight = !this.character.otherDirection;
     const x = throwRight ? this.character.x + 100 : this.character.x - 20;
     const y = this.character.y + 120;
-
     const bottle = new ThrowableObject(x, y, throwRight, this.sfx);
+    bottle.world = this;
     this.throwableObjects.push(bottle);
     this.sfx.playThrow();
   }
@@ -276,20 +272,6 @@ class World {
     });
   }
 
-  bottleHitsChicken() {
-    this.throwableObjects.forEach(bottle => this.checkBottleAgainstChickens(bottle));
-  }
-
-  checkBottleAgainstChickens(bottle) {
-    this.level.enemies?.forEach(enemy => {
-      if (!(enemy instanceof Chicken)) return;
-      if (enemy.isDead) return;
-      if (!bottle.isColliding(enemy)) return;
-      bottle.hasHitEnemy = true;
-      enemy.die();
-      bottle.splash();
-    });
-  }
 
   activateBossIfNear() {
     const boss = this.getBoss();
@@ -311,24 +293,6 @@ class World {
     this.statusBarBoss.setPercentage(boss.energy);
   }
 
-  bottleHitsBoss() {
-    const boss = this.getBoss();
-    if (!this.canHitBoss(boss)) return;
-    this.throwableObjects.forEach(bottle => this.checkBottleAgainstBoss(bottle, boss));
-  }
-
-  canHitBoss(boss) {
-    return boss && !boss.isDead && !boss.isRemoved;
-  }
-
-  checkBottleAgainstBoss(bottle, boss) {
-    if (bottle.hasHitBoss) return;
-    if (!bottle.isColliding(boss)) return;
-    bottle.hasHitBoss = true;
-    boss.hitBoss(20);
-    this.updateBossBar();
-    bottle.splash();
-  }
 
   checkEndConditions() {
     if (this.isPlayerDead()) return this.finishGame(false);

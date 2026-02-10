@@ -2,6 +2,9 @@ class ThrowableObject extends MovableObject {
   width = 50;
   height = 100;
   groundY = 450;
+  world = null;
+  hasHitEnemy = false;
+  hasHitBoss = false;
 
   constructor(x, y, throwRight = true, sfx) {
     super().loadImage(throwable_assets.rotation[0]);
@@ -39,6 +42,7 @@ class ThrowableObject extends MovableObject {
     this.moveHorizontal();
     this.moveVertical();
     this.applyGravity();
+    this.checkHits();
     this.trySplashOnGround();
   }
 
@@ -111,4 +115,34 @@ class ThrowableObject extends MovableObject {
     this.isRemoved = true;
     this.x = -9999;
   }
+
+  checkHits() {
+  if (!this.world) return;
+  this.hitChickens();
+  this.hitBoss();
+}
+
+hitChickens() {
+  if (this.hasHitEnemy) return;
+  const enemies = this.world.level?.enemies || [];
+  for (const enemy of enemies) {
+    if (!(enemy instanceof Chicken)) continue;
+    if (enemy.isDead) continue;
+    if (!this.isColliding(enemy)) continue;
+    this.hasHitEnemy = true;
+    enemy.die();           
+    this.splash();
+    return;
+  }
+}
+
+hitBoss() {
+  if (this.hasHitBoss) return;
+  const boss = (this.world.level?.enemies || []).find(e => e instanceof Endboss);
+  if (!boss || boss.isDead || boss.isRemoved) return;
+  if (!this.isColliding(boss)) return;
+  this.hasHitBoss = true;
+  boss.hitBoss(20);
+  this.splash();
+}
 }
