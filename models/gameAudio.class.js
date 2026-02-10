@@ -2,12 +2,13 @@ class GameAudio {
   constructor(groups, volume = 0.6) {
     this.groups = groups;
     this.volume = volume;
-    this.enabled = localStorage.getItem("soundEnabled") !== "false";
+    this.enabled = localStorage.getItem("soundEnabled") === "true";
     this.unlocked = false;
     this.music = null;
     this.musicVolume = 0.35;
     this.cooldowns = {};
     this.activeSfx = new Set();
+    this.loopingSfx = new Map();
   }
 
   unlock() {
@@ -101,6 +102,8 @@ class GameAudio {
   }
 
   stopAllSfx() {
+    this.loopingSfx?.forEach((_, key) => this.stopLoop(key));
+  this.loopingSfx?.clear?.();
     this.activeSfx.forEach(a => this.stopAudio(a));
     this.activeSfx.clear();
   }
@@ -149,4 +152,34 @@ class GameAudio {
     if (won) this.musicWin();
     else this.musicLose();
   }
+
+  playLoop(groupName, key = groupName) {
+  if (!this.canPlay()) return;
+
+  // läuft schon?
+  const existing = this.loopingSfx.get(key);
+  if (existing && !existing.paused) return;
+
+  const src = this.pickRandomSrc(groupName);
+  if (!src) return;
+
+  // falls vorhanden, alten Loop ersetzen
+  if (existing) this.stopLoop(key);
+
+  const a = this.createSfx(src);
+  a.loop = true;
+
+  this.loopingSfx.set(key, a);
+  this.activeSfx.add(a); // optional: damit stopAllSfx es auch killt
+
+  a.play().catch(() => {});
+}
+
+stopLoop(key) {
+  const a = this.loopingSfx.get(key);
+  if (!a) return;
+  this.stopAudio(a);
+  this.loopingSfx.delete(key);
+  this.activeSfx.delete(a);
+}
 }

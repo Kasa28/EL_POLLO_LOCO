@@ -9,17 +9,21 @@ const ASSETS = {
 };
 
 function init() {
+  if (localStorage.getItem("soundEnabled") === null) {
+    localStorage.setItem("soundEnabled", "false");
+  }
   canvas = document.getElementById("canvas");
   keyboard = new Keyboard();
   audioManager = new GameAudio(
-  {
-    ...bottle_assets.sounds,
-    ...CHARACTER_ASSETS.sounds,
-    ...endboss_assets.sounds,
-    ...chicken_assets.sounds,
-  },
-  0.6
-);
+    {
+      ...bottle_assets.sounds,
+      ...CHARACTER_ASSETS.sounds,
+      ...endboss_assets.sounds,
+      ...chicken_assets.sounds,
+    },
+    0.6
+  );
+
   audioManager.switchMusic("audio/intro_game.mp3", 0.35);
   setupSoundButton(audioManager);
   window.addEventListener("pointerdown", () => audioManager.unlock(), { once: true });

@@ -55,23 +55,45 @@ class Character extends MovableObject {
   }
 
   handleAnimations() {
-    if (this.isDead()) return this.playDeadOnce();
+    if (this.isDead()) {
+      this.world.sfx.stopLoop("walk");
+      return this.playDeadOnce();
+    }
     if (this.isHurt()) {
-        this.resetIdle();
-     return this.playAnimation(this.images_hurt);
-}
-    if (this.isAboveGround()) return this.playAnimation(this.images_jumping);
+      this.world.sfx.stopLoop("walk");
+      this.resetIdle();
+      return this.playAnimation(this.images_hurt);
+    }
+    if (this.isAboveGround()) {
+      this.world.sfx.stopLoop("walk");
+      return this.playAnimation(this.images_jumping);
+    }
     this.handleGroundState();
   }
 
   handleGroundState() {
-    if (this.world.keyboard.UP && !this.isAboveGround()) this.jump();
-    if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
+    if (this.world.keyboard.UP && !this.isAboveGround()) {
+      this.jump();
+      return;
+    }
+
+    const isWalking = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
+
+    if (isWalking) {
       this.playAnimation(this.images_walking);
       this.resetIdle();
+      this.world.sfx.playLoop("walking_audio", "walk");
     } else {
+      this.world.sfx.stopLoop("walk");
       this.handleIdle();
     }
+  }
+
+  jump() {
+    this.resetIdle();
+    this.world.sfx.stopLoop("walk");
+    this.speedY = 30;
+    this.world.sfx.playOnce("jumping_audio", 250);
   }
 
   handleIdle() {
@@ -88,12 +110,6 @@ class Character extends MovableObject {
     this.lastIdleFrame = 0;
   }
 
-  jump() {
-    this.resetIdle();
-    this.speedY = 30;
-    this.world.sfx.playOnce("jumping_audio", 250);
-  }
-
   playDeadOnce() {
     if (this.deadPlayedOnce) return;
     const lastIndex = this.images_dead.length - 1;
@@ -104,10 +120,9 @@ class Character extends MovableObject {
   }
 
   hit(dmg = 1) {
-  if (this.isHurt()) return;
-  this.energy -= dmg;
-  if (this.energy < 0) this.energy = 0;
-  this.lastHit = Date.now();
-}
-
+    if (this.isHurt()) return;
+    this.energy -= dmg;
+    if (this.energy < 0) this.energy = 0;
+    this.lastHit = Date.now();
+  }
 }
