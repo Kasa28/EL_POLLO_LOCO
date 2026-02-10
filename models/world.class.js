@@ -35,7 +35,7 @@ class World {
   }
 
   initGameObjects() {
-    this.character = new Character();
+    this.character = new Character(this.sfx);
   }
 
   linkWorldToObjects() {

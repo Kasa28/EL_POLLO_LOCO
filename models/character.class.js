@@ -15,14 +15,16 @@ class Character extends MovableObject {
   coins = 0;
   bottles = 0;
   world;
+  sfx;
   damage = 20;
   throwBottles = [];
   offset = { top: 120, bottom: 30, left: 40, right: 30 };
   deadFrame = 0;
   deadPlayedOnce = false;
 
-  constructor() {
+  constructor(sfx) {
     super().loadImage(CHARACTER_ASSETS.startImage);
+    this.sfx = sfx;
     this.loadImages(this.images_walking);
     this.loadImages(this.images_jumping);
     this.loadImages(this.images_dead);
