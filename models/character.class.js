@@ -15,7 +15,7 @@ class Character extends MovableObject {
   bottles = 0;
   world;
   sfx;
-  offset = { top: 120, bottom: 30, left: 40, right: 30 };
+  offset = { top: 90, bottom: 5, left: 10, right: 30 };
   deadFrame = 0;
   deadPlayedOnce = false;
   THROW_COOLDOWN = 500;
