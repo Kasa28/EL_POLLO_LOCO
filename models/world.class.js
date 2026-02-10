@@ -350,7 +350,7 @@ removeDeadEnemies() {
 finishGame(won) {
   if (this.gameOver || this.ending) return;
   this.ending = true; 
-  this.sfx?.sopAllSfx();
+  this.sfx?.stopAllSfx();
   if (won) this.sfx.switchMusic("audio/you_win.mp3", 0.45, false);
   else this.sfx.switchMusic("audio/game_over.mp3", 0.45, false);
   setTimeout(() => {

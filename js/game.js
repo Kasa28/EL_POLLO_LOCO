@@ -177,10 +177,8 @@ document.addEventListener("click", (e) => {
   const menu = document.getElementById("hamburger-menu");
   const topnav = document.querySelector("#legal-notice .topnav");
   if (!menu || !topnav) return;
-
-  if (!topnav.contains(e.target)) {
-    menu.classList.remove("is-open");
-  }
+  const clickedInside = topnav.contains(e.target);
+  if (!clickedInside) menu.classList.remove("is-open");
 });
 
 function setupSoundButton(audio) {
@@ -204,4 +202,5 @@ function setupSoundButton(audio) {
     audio.toggle();  
     render();
   });
+
 }

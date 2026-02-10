@@ -6,9 +6,7 @@
   font-display: swap;
 }
 
-
 * { box-sizing: border-box; }
-
 html, body { height: 100%; }
 
 body{
@@ -17,11 +15,11 @@ body{
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 14px;
   padding: 18px 14px;
   background: url('../img/bg/wüste.png') center/cover no-repeat fixed;
   font-family: "Bungee", sans-serif;
-  justify-content: center;
 }
 
 h1{
@@ -32,10 +30,11 @@ h1{
   font-size: clamp(36px, 6vw, 84px);
 }
 
-
 .game-wrap{
   position: relative;
   width: min(92vw, 720px);
+  aspect-ratio: 3 / 2;              
+  max-height: calc(100vh - 140px);   
   border-radius: 18px;
   overflow: hidden;
   box-shadow: 0 18px 40px rgba(0,0,0,.28);
@@ -44,14 +43,64 @@ h1{
 
 #canvas{
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
-  background: transparent; 
+  background: transparent;
 }
 
-@media (max-height: 480px){
-  body{ padding: 8px; gap: 8px; }
-  h1{ display: none; }
+.hud{
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: row;    
+  align-items: center;
+  gap: 10px;
+  z-index: 95;
+}
+
+.hud-btn{
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(3px);
+  display: grid;
+  place-items: center;
+}
+
+.hud .fs-btn,
+.hud .sound-btn{
+  position: static !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+}
+
+.hud .sound-btn img{
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.hud .fs-btn{
+  position: static !important;
+}
+
+.sound-btn img{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.sound-btn.is-off{
+  opacity: .6;
+  filter: grayscale(1);
 }
 
 .overlay{
@@ -73,6 +122,7 @@ h1{
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,.35);
   background: rgba(0,0,0,.55);
+  position: relative;
 }
 
 .overlay-preview{
@@ -88,6 +138,19 @@ h1{
   background: rgba(0,0,0,.35);
 }
 
+.overlay-actions--top{
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  z-index: 5;
+}
+
 .ui-btn{
   border: none;
   border-radius: 14px;
@@ -99,7 +162,6 @@ h1{
   box-shadow: 0 6px 0 rgba(0,0,0,.25);
   transition: transform .08s ease, filter .12s ease;
 }
-
 .ui-btn:active{ transform: translateY(1px); }
 
 .ui-btn--ghost{
@@ -115,14 +177,13 @@ h1{
   display: flex;
   justify-content: space-between;
   padding: 0 16px;
-  z-index: 40;
+  z-index: 80;
 
   pointer-events: none;
-  opacity: 0;               
+  opacity: 0;
   transform: translateY(8px);
   transition: .2s ease;
 }
-
 .mobile-controls--show{
   opacity: 1;
   transform: translateY(0);
@@ -157,107 +218,90 @@ h1{
   background: rgba(20, 12, 6, .62);
 }
 
-#btnJump,
-#btnThrow{
+#btnJump, #btnThrow{
   width: 62px;
   height: 62px;
   font-size: 26px;
   border-radius: 18px;
 }
 
+@media (pointer: coarse){
+  h1{ display:none; }
+  body{ padding: 8px; gap: 8px; }
+
+  .game-wrap{
+    width: min(78vw, 720px);
+    max-height: calc(100vh - 16px);
+  }
+
+  .mobile-controls{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    opacity: 1;
+    transform: none;
+    pointer-events: none;
+  }
+
+  .ctrl-left{
+    position: fixed;
+    left: calc(10px + env(safe-area-inset-left));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+  }
+
+  .ctrl-right{
+    position: fixed;
+    right: calc(10px + env(safe-area-inset-right));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+  }
+
+  .ctrl-btn{
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    border: 2px solid rgba(0,0,0,.25);
+    background: #f5c400;
+    color: #2b1d00;
+    font-size: 28px;
+    font-weight: 900;
+    box-shadow: 0 10px 0 rgba(0,0,0,.25);
+  }
+
+  #btnJump, #btnThrow{
+    width: 70px;
+    height: 70px;
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 740px) and (max-height: 380px){
+  .game-wrap{ width: min(74vw, 620px); }
+  .ctrl-btn{ width: 52px; height: 52px; font-size: 22px; }
+  #btnJump, #btnThrow{ width: 58px; height: 58px; font-size: 24px; }
+}
 
 @media (min-width: 900px){
   .mobile-controls{ display: none !important; }
 }
 
-.instruction{
-  display: none;              
-  width: min(92vw, 720px);
-  text-align: center;
-  font-size: 12px;
-  gap: 18px;
-  justify-content: center;
-  align-items: center;
-}
+#legal-notice .topnav{ display: none; }
 
-.instruction h2{
-  margin: 0;
-  font-size: 12px;
-  text-shadow: 0 6px 18px rgba(0,0,0,.25);
-}
-
-.instruction--show{
-  display: flex;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 520px){
-  .instruction{ font-size: 11px; }
-  .instruction h2{ font-size: 11px; }
-}
-
-.overlay-card{ position: relative; }
-
-.overlay-actions--top{
-  position: absolute;
-  top: 14px;
-  left: 0;
-  right: 0;
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  padding: 0;
-  background: transparent;
-  z-index: 5;
-}
-
-#legal-notice .topnav {
-  display: none !important;
-}
-
-
-#legal-notice .bottomnav {
+#legal-notice .bottomnav{
   display: flex;
   justify-content: center;
   padding: 12px 0;
 }
-@media (max-width: 720px) {
-  #legal-notice .bottomnav {
-    display: none !important;
-  }
 
-  #legal-notice .topnav {
-    display: flex !important;
-    justify-content: flex-end;
-    padding: 12px;
-    position: fixed;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9999;
-  }
-
-  #legal-notice .topnav > div {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,.85);
-    box-shadow: 0 10px 25px rgba(0,0,0,.18);
-    cursor: pointer;
-  }
-
-  #legal-notice .topnav svg {
-    width: 26px;
-    height: 20px;
-    display: block;
-  }
-}
-
-#legal-notice a {
-  text-decoration: none !important;
+#legal-notice a{
+  text-decoration: none;
   color: rgba(0,0,0,.9);
   font-family: "Bungee", sans-serif;
   font-size: 22px;
@@ -265,41 +309,40 @@ h1{
   font-weight: 700;
 }
 
-#legal-notice a:hover {
-  text-decoration: none !important;
-  transform: translateY(-1px);
-}
+#legal-notice a:hover{ transform: translateY(-1px); }
 
-@media (max-width: 720px) {
-  #legal-notice a {
-    font-size: 18px;
-  }
-}
-
-.sound-btn.is-off{
-  opacity: .6;
-  filter: grayscale(1);
-}
-
-.sound-btn{
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  width: 44px;
-  height: 44px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  background: rgba(0,0,0,.25);
-  backdrop-filter: blur(3px);
+#legal-notice .burger{
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
-  z-index: 70;
+  background: rgba(255,255,255,.85);
+  box-shadow: 0 10px 25px rgba(0,0,0,.18);
+  cursor: pointer;
+  padding: 0;
 }
 
-.sound-btn img{
+#legal-notice .burger img{
   width: 26px;
   height: 26px;
   object-fit: contain;
-  pointer-events: none;
+  display: block;
+}
+
+@media (pointer: coarse), (max-width: 720px){
+  #legal-notice .bottomnav{ display: none; }
+
+  #legal-notice .topnav{
+    display: block;
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
+    z-index: 10050;
+  }
+}
+
+@media (max-height: 480px){
+  body{ padding: 8px; gap: 8px; }
+  h1{ display: none; }
 }

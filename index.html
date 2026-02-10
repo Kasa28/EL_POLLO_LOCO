@@ -1,125 +1,111 @@
 <!DOCTYPE html>
 <html translate="no" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google" content="notranslate">
-    <title>2d Game El pollo loco</title>
-    <link rel="icon" type="image/png" href="img/favicon.png">
-    <link rel="stylesheet" href="./styles/legal-notice.css">
-    <link rel="stylesheet" href="./styles/style.css">
-    <link rel="stylesheet" href="./styles/fullscreen.css">
-    <script src="./models/drawable_object.class.js"></script>
-    <script src="./models/movable_object.class.js"></script>
-    <script src="./assets_js/character.assets.class.js"></script>
-    <script src="./models/character.class.js"></script>
-    <script src="./assets_js/chicken.assets.class.js"></script>
-    <script src="./models/chicken.class.js"></script>
-    <script src="./assets_js/statusbar.assets.class.js"></script>
-    <script src="./models/status_bar.class.js"></script>
-    <script src="./assets_js/cloud.assets.class.js"></script>
-    <script src="./models/cloud.class.js"></script>
-    <script src="./models/gameAudio.class.js"></script>
-    <script src="./models/world.class.js"></script>
-    <script src="./models/background-object.class.js"></script>
-    <script src="./models/keyboard.class.js"></script>
-    <script src="./models/level.class.js"></script>
-    <script src="./models/throwable_object.class.js"></script>
-    <script src="./assets_js/endboss.assets.class.js"></script>
-    <script src="./models/endboss.class.js"></script>
-    <script src="./levels/level_1.js"></script>
-    <script src="./assets_js/coin.assets.class.js"></script>
-    <script src="./models/coin.class.js"></script>
-    <script src="./assets_js/bottle.assets.class.js"></script>
-    <script src="./models/bottle_under.class.js"></script>
-    <script src="./js/game.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google" content="notranslate" />
+  <title>2d Game El pollo loco</title>
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <link rel="stylesheet" href="./styles/style.css" />
+  <link rel="stylesheet" href="./styles/fullscreen.css" />
+  <script src="./models/drawable_object.class.js"></script>
+  <script src="./models/movable_object.class.js"></script>
+  <script src="./assets_js/character.assets.class.js"></script>
+  <script src="./models/character.class.js"></script>
+  <script src="./assets_js/chicken.assets.class.js"></script>
+  <script src="./models/chicken.class.js"></script>
+  <script src="./assets_js/statusbar.assets.class.js"></script>
+  <script src="./models/status_bar.class.js"></script>
+  <script src="./assets_js/cloud.assets.class.js"></script>
+  <script src="./models/cloud.class.js"></script>
+  <script src="./models/gameAudio.class.js"></script>
+  <script src="./models/world.class.js"></script>
+  <script src="./models/background-object.class.js"></script>
+  <script src="./models/keyboard.class.js"></script>
+  <script src="./models/level.class.js"></script>
+  <script src="./models/throwable_object.class.js"></script>
+  <script src="./assets_js/endboss.assets.class.js"></script>
+  <script src="./models/endboss.class.js"></script>
+  <script src="./levels/level_1.js"></script>
+  <script src="./assets_js/coin.assets.class.js"></script>
+  <script src="./models/coin.class.js"></script>
+  <script src="./assets_js/bottle.assets.class.js"></script>
+  <script src="./models/bottle_under.class.js"></script>
+  <script src="./js/game.js"></script>
 </head>
+
 <body onload="init()">
-
-    <h1>El pollo loco</h1>
-    
-<div class="game-wrap">
-  <button id="btnFullscreen" class="fs-btn" aria-label="Fullscreen">⛶</button>
-<button id="btnSound" class="sound-btn" aria-label="Sound on/off" title="Sound on/off">
-  <img id="soundIcon" src="img/ton/ton_on.png" alt="Sound">
-</button>
-  <canvas id="canvas" width="720" height="480"></canvas>
-
-  <div id="startScreen" class="overlay overlay--show">
-    <div class="overlay-card">
-      <img class="overlay-preview" src="img/9_intro_outro_screens/start/startscreen_1.png" alt="El Pollo Loco">
-      <div class="overlay-actions overlay-actions--top">
-        <button id="btnStart" class="ui-btn">Start Game</button>
-        <button id="btnControls" class="ui-btn ui-btn--ghost">Controls</button>
-      </div>
+  <h1>El pollo loco</h1>
+  <div class="game-wrap">
+    <div class="hud">
+      <button id="btnFullscreen" class="hud-btn fs-btn" aria-label="Fullscreen">⛶</button>
+      <button id="btnSound" class="hud-btn sound-btn" aria-label="Sound on/off" title="Sound on/off">
+        <img id="soundIcon" src="img/ton/ton_on.png" alt="Sound" />
+      </button>
     </div>
-  </div>
+    <canvas id="canvas" width="720" height="480"></canvas>
 
-<div id="endScreen" class="overlay">
-  <div class="overlay-card overlay-card--fullscreen">
-    <img id="endImage" class="overlay-preview overlay-preview--fullscreen" src="" alt="">
-
-    <div class="overlay-actions">
-      <button id="btnReplay" class="ui-btn ui-btn--replay">Replay</button>
-      <button id="btnHome" class="ui-btn ui-btn--ghost">Home</button>
-    </div>
-  </div>
-</div>
-
-
-  <div class="mobile-controls">
-    <div class="ctrl-left">
-      <button id="btnLeft" class="ctrl-btn">◀</button>
-      <button id="btnRight" class="ctrl-btn">▶</button>
-    </div>
-    <div class="ctrl-right">
-      <button id="btnJump" class="ctrl-btn">⬆</button>
-      <button id="btnThrow" class="ctrl-btn">🍾</button>
-    </div>
-  </div>
-
-<div id="controlsModal" class="overlay">
-  <div class="controls-card" role="dialog" aria-modal="true" aria-labelledby="controlsTitle">
-    <button id="btnCloseControls" class="controls-close" aria-label="Close">✕</button>
-
-    <h2 id="controlsTitle">How to Play</h2>
-
-    <div class="controls-grid">
-      <div class="controls-col">
-        <h3>Movement</h3>
-        <div class="controls-row"><span> ← </span><span>Move Left</span></div>
-        <div class="controls-row"><span> → </span><span>Move Right</span></div>
-        <div class="controls-row"><span> ↑ </span><span>Jump</span></div>
-      </div>
-
-      <div class="controls-col">
-        <h3>Actions</h3>
-        <div class="controls-row"><span>D</span><span>Throw Bottle</span></div>
-        <div class="controls-row"><span>ESC</span><span>Minimize Screen</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-</div>
-
-    <div id="legal-notice">
-        <div class="topnav">
-            <div onclick="openNavMenu()">
-                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 122.88 95.95" style="enable-background:new 0 0 122.88 95.95" xml:space="preserve">
-                    <style type="text/css">.st0{fill-rule:evenodd;clip-rule:evenodd;}</style>
-                    <g>
-                        <path class="st0" d="M8.94,0h105c4.92,0,8.94,4.02,8.94,8.94l0,0c0,4.92-4.02,8.94-8.94,8.94h-105C4.02,17.88,0,13.86,0,8.94l0,0 C0,4.02,4.02,0,8.94,0L8.94,0z M8.94,78.07h105c4.92,0,8.94,4.02,8.94,8.94l0,0c0,4.92-4.02,8.94-8.94,8.94h-105 C4.02,95.95,0,91.93,0,87.01l0,0C0,82.09,4.02,78.07,8.94,78.07L8.94,78.07z M8.94,39.03h105c4.92,0,8.94,4.02,8.94,8.94l0,0 c0,4.92-4.02,8.94-8.94,8.94h-105C4.02,56.91,0,52.89,0,47.97l0,0C0,43.06,4.02,39.03,8.94,39.03L8.94,39.03z"/>
-                    </g>
-                </svg>
-            </div>
-            <div id="hamburger-menu">
-                <a href="./legal_notice.html">Legal notice</a>
-            </div>
+    <div id="startScreen" class="overlay overlay--show">
+      <div class="overlay-card">
+        <img class="overlay-preview" src="img/9_intro_outro_screens/start/startscreen_1.png" alt="El Pollo Loco" />
+        <div class="overlay-actions overlay-actions--top">
+          <button id="btnStart" class="ui-btn">Start Game</button>
+          <button id="btnControls" class="ui-btn ui-btn--ghost">Controls</button>
         </div>
-        <div class="bottomnav">
-            <a href="legal_notice.html" target="_blank">Legal notice</a>
-        </div>
+      </div>
     </div>
+
+    <div id="endScreen" class="overlay">
+      <div class="overlay-card overlay-card--fullscreen">
+        <img id="endImage" class="overlay-preview overlay-preview--fullscreen" src="" alt="" />
+        <div class="overlay-actions">
+          <button id="btnReplay" class="ui-btn ui-btn--replay">Replay</button>
+          <button id="btnHome" class="ui-btn ui-btn--ghost">Home</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-controls">
+      <div class="ctrl-left">
+        <button id="btnLeft" class="ctrl-btn">◀</button>
+        <button id="btnRight" class="ctrl-btn">▶</button>
+      </div>
+      <div class="ctrl-right">
+        <button id="btnJump" class="ctrl-btn">⬆</button>
+        <button id="btnThrow" class="ctrl-btn">🍾</button>
+      </div>
+    </div>
+
+    <div id="controlsModal" class="overlay">
+      <div class="controls-card" role="dialog" aria-modal="true" aria-labelledby="controlsTitle">
+        <button id="btnCloseControls" class="controls-close" aria-label="Close">✕</button>
+        <h2 id="controlsTitle">How to Play</h2>
+        <div class="controls-grid">
+          <div class="controls-col">
+            <h3>Movement</h3>
+            <div class="controls-row"><span>←</span><span>Move Left</span></div>
+            <div class="controls-row"><span>→</span><span>Move Right</span></div>
+            <div class="controls-row"><span>↑</span><span>Jump</span></div>
+          </div>
+
+          <div class="controls-col">
+            <h3>Actions</h3>
+            <div class="controls-row"><span>D</span><span>Throw Bottle</span></div>
+            <div class="controls-row"><span>ESC</span><span>Minimize Screen</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="legal-notice">
+    <div class="topnav">
+      <a class="burger" href="./legal_notice.html" aria-label="Open legal notice">
+        <img src="./img/bg/legal_notice.png" alt="" />
+      </a>
+    </div>
+    <div class="bottomnav">
+      <a href="./legal_notice.html" target="_blank" rel="noopener">Legal notice</a>
+    </div>
+  </div>
 </body>
 </html>
