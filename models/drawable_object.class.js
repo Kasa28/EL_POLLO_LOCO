@@ -42,4 +42,23 @@ img.src = path;
 this.imageCache[path] = img;
 })
 }
+
+isColliding(mo) {
+  const a = this.getHitbox();
+  const b = mo.getHitbox ? mo.getHitbox() : mo;
+  return a.x + a.w > b.x &&
+         a.y + a.h > b.y &&
+         a.x < b.x + b.w &&
+         a.y < b.y + b.h;
+}
+
+getHitbox() {
+  const o = this.offset || { top: 0, right: 0, bottom: 0, left: 0 };
+  return {
+    x: this.x + o.left,
+    y: this.y + o.top,
+    w: this.width - o.left - o.right,
+    h: this.height - o.top - o.bottom,
+  };
+}
 }
