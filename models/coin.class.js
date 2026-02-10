@@ -6,6 +6,6 @@ class Coin extends MovableObject {
     super();
     this.loadImage(coin_assets.icon);
     this.x = x ?? (200 + Math.random() * 1800);
-    this.y = y ?? (180 + Math.random() * 120);
+    this.y = y ?? (80 + Math.random() * 120);
   }
 }
