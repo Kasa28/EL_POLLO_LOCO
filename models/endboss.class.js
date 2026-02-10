@@ -32,8 +32,8 @@ class Endboss extends MovableObject {
 
   animate() {
     this.stop();
-    this.spriteIntervalId = setInterval(() => this.animateSprite(), 160);
-    this.logicIntervalId = setInterval(() => this.updateMovementAndAttack(), 1000 / 60);
+    this.startSpriteLoop();
+    this.startLogicLoop();
   }
 
   stop() {
@@ -43,43 +43,88 @@ class Endboss extends MovableObject {
     this.logicIntervalId = null;
   }
 
-  animateSprite() {
-    if (this.isDead) return this.playAnimation(endboss_assets.dead);
-    if (this.isHurtBoss) return this.playAnimation(endboss_assets.hurt);
-    if (!this.isActive) return this.playAnimation(endboss_assets.walking);
-    if (this.currentState === "alert") return this.playAnimation(endboss_assets.alert);
-    if (this.currentState === "attack") return this.playAnimation(endboss_assets.attack);
-    return this.playAnimation(endboss_assets.walking);
+  startSpriteLoop() {
+    this.spriteIntervalId = setInterval(() => this.animateSprite(), 160);
   }
 
-  updateMovementAndAttack() {
-    if (!this.world) return;
-    if (this.world.ending || this.world.gameOver) return; 
-    if (!this.isActive || this.isDead) return;
+  startLogicLoop() {
+    this.logicIntervalId = setInterval(() => this.updateLogic(), 1000 / 60);
+  }
+
+  animateSprite() {
+    this.playAnimation(this.getSpriteFrames());
+  }
+
+  getSpriteFrames() {
+    if (this.isDead) return endboss_assets.dead;
+    if (this.isHurtBoss) return endboss_assets.hurt;
+    if (!this.isActive) return endboss_assets.walking;
+    if (this.currentState === "alert") return endboss_assets.alert;
+    if (this.currentState === "attack") return endboss_assets.attack;
+    return endboss_assets.walking;
+  }
+
+  updateLogic() {
+    if (this.shouldSkipLogic()) return;
     const character = this.world.character;
-    const distance = Math.abs(character.x - this.x);
-    if (this.currentState === "alert") return;
-    if (distance < 95) {
-      this.attack(character);
-      return;
-    }
+    const distance = this.getDistanceTo(character);
+    if (this.isInAlert()) return;
+    if (this.isInAttackRange(distance)) return this.attack(character);
+    this.walkTowards(character);
+  }
+
+  shouldSkipLogic() {
+    if (!this.world) return true;
+    if (this.world.ending || this.world.gameOver) return true;
+    if (!this.isActive || this.isDead) return true;
+    return false;
+  }
+
+  getDistanceTo(character) {
+    return Math.abs(character.x - this.x);
+  }
+
+  isInAlert() {
+    return this.currentState === "alert";
+  }
+
+  isInAttackRange(distance) {
+    return distance < 95;
+  }
+
+  walkTowards(character) {
     this.currentState = "walk";
-    if (character.x < this.x) {
-      this.otherDirection = false;
-      this.x -= this.speed;
-    } else {
-      this.otherDirection = true;
-      this.x += this.speed;
-    }
+    this.moveDirectionTo(character);
+    this.moveStep();
+  }
+
+  moveDirectionTo(character) {
+    const goLeft = character.x < this.x;
+    this.otherDirection = !goLeft;
+    this.walkDir = goLeft ? -1 : 1;
+  }
+
+  moveStep() {
+    this.x += this.walkDir * this.speed;
   }
 
   setActive() {
     if (this.isActive) return;
     this.isActive = true;
+    this.setAlertState();
+    this.leaveAlertLater();
+  }
+
+  setAlertState() {
     this.currentState = "alert";
-    setTimeout(() => {
-      if (!this.isDead) this.currentState = "walk";
-    }, 1200);
+  }
+
+  leaveAlertLater() {
+    setTimeout(() => this.trySetWalkState(), 1200);
+  }
+
+  trySetWalkState() {
+    if (!this.isDead) this.currentState = "walk";
   }
 
   canAttack() {
@@ -87,33 +132,54 @@ class Endboss extends MovableObject {
   }
 
   attack(character) {
-    if (!this.world) return;
-    if (this.world.ending || this.world.gameOver) return; // ✅ auch hier absichern
-    if (!this.canAttack() || this.currentState === "attack") return;
-    if (this.isDead) return;
+    if (this.shouldSkipAttack()) return;
+    if (!this.canAttack()) return;
+    this.startAttack();
+    this.doAttackDamage(character);
+    this.finishAttackLater();
+  }
+
+  shouldSkipAttack() {
+    if (!this.world) return true;
+    if (this.world.ending || this.world.gameOver) return true;
+    if (this.currentState === "attack") return true;
+    if (this.isDead) return true;
+    return false;
+  }
+
+  startAttack() {
     this.currentState = "attack";
     this.lastAttack = Date.now();
     this.world?.sfx?.playOnce("attack_audio", 800);
+  }
+
+  doAttackDamage(character) {
     character.hit(25);
-    setTimeout(() => {
-      if (!this.isDead) this.currentState = "walk";
-    }, 600);
+  }
+
+  finishAttackLater() {
+    setTimeout(() => this.trySetWalkState(), 600);
   }
 
   hitBoss(dmg = 30) {
     if (this.isDead) return;
     this.energy -= dmg;
-    if (this.energy <= 0) {
-      this.energy = 0;
-      this.die();
-      return;
-    }
+    if (this.energy <= 0) return this.die();
+    this.triggerHurt();
+    this.clearHurtLater();
+  }
+
+  triggerHurt() {
     this.isHurtBoss = true;
+  }
+
+  clearHurtLater() {
     setTimeout(() => (this.isHurtBoss = false), 350);
   }
 
   die() {
     if (this.isDead) return;
+    this.energy = 0;
     this.isDead = true;
     this.stop();
     setTimeout(() => (this.isRemoved = true), 1000);
