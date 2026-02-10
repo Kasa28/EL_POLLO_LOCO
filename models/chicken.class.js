@@ -40,11 +40,10 @@ class Chicken extends MovableObject {
 
   die() {
     if (this.isDead) return;
-
     this.isDead = true;
     this.speed = 0;
     this.img = this.imageCache[chicken_assets.dead[0]];
-
     setTimeout(() => (this.isRemoved = true), 1000);
+    this.world?.sfx?.playOnce?.("chicken_dead", 150) 
   }
 }

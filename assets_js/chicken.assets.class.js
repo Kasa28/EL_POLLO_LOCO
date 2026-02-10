@@ -7,4 +7,12 @@ const chicken_assets = {
   dead: [
     "img/3_enemies_chicken/chicken_normal/2_dead/dead.png",
   ],
+
+      sounds: {
+    chicken_dead: [
+        "audio/chicken-dead.mp3"
+    ],
+
+  },
+
 };

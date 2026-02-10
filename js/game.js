@@ -16,6 +16,7 @@ function init() {
     ...bottle_assets.sounds,
     ...CHARACTER_ASSETS.sounds,
     ...endboss_assets.sounds,
+    ...chicken_assets.sounds,
   },
   0.6
 );
