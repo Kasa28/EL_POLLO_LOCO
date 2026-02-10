@@ -5,13 +5,10 @@ class Cloud extends MovableObject {
 
   constructor() {
     super();
-
     const img = cloud_assets.images[Math.floor(Math.random() * cloud_assets.images.length)];
     this.loadImage(img);
-
     this.x = Math.random() * 500;
     this.speed = 0.2 + Math.random() * 0.3;
-
     this.startMoving();
   }
 
