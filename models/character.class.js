@@ -56,7 +56,10 @@ class Character extends MovableObject {
 
   handleAnimations() {
     if (this.isDead()) return this.playDeadOnce();
-    if (this.isHurt()) return this.playAnimation(this.images_hurt);
+    if (this.isHurt()) {
+        this.resetIdle();
+     return this.playAnimation(this.images_hurt);
+}
     if (this.isAboveGround()) return this.playAnimation(this.images_jumping);
     this.handleGroundState();
   }
@@ -99,4 +102,11 @@ class Character extends MovableObject {
     if (this.deadFrame < lastIndex) this.deadFrame++;
     else this.deadPlayedOnce = true;
   }
+
+  hit(dmg = 5) {
+  super.hit(dmg);
+  this.resetIdle();          
+}
+
+
 }
