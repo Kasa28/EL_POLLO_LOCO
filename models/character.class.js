@@ -11,7 +11,7 @@ class Character extends MovableObject {
   idleTime = 0;
   idleMode = "normal";
   lastIdleFrame = 0;
-  energy = 100;
+  energy = 6;
   coins = 0;
   bottles = 0;
   world;
@@ -103,10 +103,11 @@ class Character extends MovableObject {
     else this.deadPlayedOnce = true;
   }
 
-  hit(dmg = 5) {
-  super.hit(dmg);
-  this.resetIdle();          
+  hit(dmg = 1) {
+  if (this.isHurt()) return;
+  this.energy -= dmg;
+  if (this.energy < 0) this.energy = 0;
+  this.lastHit = Date.now();
 }
-
 
 }
