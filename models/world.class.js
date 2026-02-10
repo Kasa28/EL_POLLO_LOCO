@@ -165,7 +165,7 @@ removeDeadEnemies() {
   const throwRight = !this.character.otherDirection;
   const x = throwRight ? this.character.x + 100 : this.character.x - 20;
   const y = this.character.y + 120;
-  const bottle = new ThrowableObject(x, y, throwRight);
+  const bottle = new ThrowableObject(x, y, throwRight, this.sfx);
   this.throwableObjects.push(bottle);
   this.sfx.play("throw");
 }
@@ -266,7 +266,6 @@ removeDeadEnemies() {
       bottle.hasHitEnemy = true;   
       enemy.die();
       bottle.splash();
-      this.sfx.play("breaking")
     });
   }
 
@@ -308,7 +307,6 @@ removeDeadEnemies() {
   bottle.hasHitBoss = true;    
   this.hitBoss(boss);
   bottle.splash();
-   this.sfx.play("breaking")
 }
 
  

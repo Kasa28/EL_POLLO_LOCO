@@ -3,10 +3,11 @@ class ThrowableObject extends MovableObject {
   height = 100;
   groundY = 450;
 
-  constructor(x, y, throwRight = true) {
+  constructor(x, y, throwRight = true, sfx) {
     super().loadImage(throwable_assets.rotation[0]);
     this.loadImages(throwable_assets.rotation);
     this.loadImages(throwable_assets.splash);
+    this.sfx = sfx;
     this.setStartPosition(x, y);
     this.setThrowDirection(throwRight);
     this.resetThrowPhysics();
@@ -80,6 +81,7 @@ class ThrowableObject extends MovableObject {
   splash() {
     if (this.isSplashed) return;
     this.isSplashed = true;
+    this.sfx?.play("breaking");
     this.stopFlightLoop();
     this.stopRotationLoop();
     this.startSplashAnimation();
