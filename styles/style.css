@@ -178,7 +178,6 @@ h1{
   justify-content: space-between;
   padding: 0 16px;
   z-index: 80;
-
   pointer-events: none;
   opacity: 0;
   transform: translateY(8px);
@@ -293,7 +292,6 @@ h1{
 }
 
 #legal-notice .topnav{ display: none; }
-
 #legal-notice .bottomnav{
   display: flex;
   justify-content: center;
@@ -332,7 +330,6 @@ h1{
 
 @media (pointer: coarse), (max-width: 720px){
   #legal-notice .bottomnav{ display: none; }
-
   #legal-notice .topnav{
     display: block;
     position: fixed;
@@ -345,4 +342,28 @@ h1{
 @media (max-height: 480px){
   body{ padding: 8px; gap: 8px; }
   h1{ display: none; }
+}
+
+#rotate-screen{
+  display: none;           
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #000;
+  margin: 0;
+  padding: 0;
+}
+
+#rotate-screen .rotate-icon{
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  object-fit: cover;     
+}
+
+@media (pointer: coarse) and (orientation: portrait){
+  #rotate-screen{ display: block; }
+  body > :not(#rotate-screen){
+    display: none !important;
+  }
 }
