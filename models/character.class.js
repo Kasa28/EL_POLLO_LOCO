@@ -86,6 +86,7 @@ class Character extends MovableObject {
   }
 
   jump() {
+    this.resetIdle();
     this.speedY = 30;
     this.world.sfx.playOnce("jumping_audio", 250);
   }
