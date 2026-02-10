@@ -111,4 +111,42 @@ class GameAudio {
       a.currentTime = 0;
     } catch {}
   }
+
+  playThrow() {
+    this.playOnce("throw", 80);
+  }
+
+  playCollect() {
+    this.playOnce("collect", 80);
+  }
+
+  playHurt() {
+    this.playOnce("hurt_audio", 500);
+  }
+
+  playBossAttack() {
+    this.playOnce("attack_audio", 800);
+  }
+
+  musicIntro() {
+    this.switchMusic("audio/intro_game.mp3", 0.35, true);
+  }
+
+  musicBoss() {
+    this.switchMusic("audio/endboss.mp3", 0.35, true);
+  }
+
+  musicWin() {
+    this.switchMusic("audio/you_win.mp3", 0.45, false);
+  }
+
+  musicLose() {
+    this.switchMusic("audio/game_over.mp3", 0.45, false);
+  }
+
+  endGame(won) {
+    this.stopAllSfx();
+    if (won) this.musicWin();
+    else this.musicLose();
+  }
 }
