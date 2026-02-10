@@ -154,7 +154,8 @@ class Endboss extends MovableObject {
   }
 
   doAttackDamage(character) {
-    character.hit(25);
+    character.hit(2);
+    this.world?.updateHealthBar();
   }
 
   finishAttackLater() {
