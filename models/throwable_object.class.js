@@ -142,7 +142,7 @@ hitBoss() {
   if (!boss || boss.isDead || boss.isRemoved) return;
   if (!this.isColliding(boss)) return;
   this.hasHitBoss = true;
-  boss.hitBoss(20);
+  boss.hitBoss(2);
   this.splash();
 }
 }

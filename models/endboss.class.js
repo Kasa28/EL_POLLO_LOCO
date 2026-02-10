@@ -2,7 +2,8 @@ class Endboss extends MovableObject {
   height = 400;
   width = 250;
   y = 60;
-  energy = 100;
+  energy = 6;
+  MAX_ENERGY = 6;
   isDead = false;
   isActive = false;
   isHurtBoss = false;
@@ -162,7 +163,7 @@ class Endboss extends MovableObject {
     setTimeout(() => this.trySetWalkState(), 600);
   }
 
-  hitBoss(dmg = 30) {
+  hitBoss(dmg = 2) {
     if (this.isDead) return;
     this.energy -= dmg;
     if (this.energy <= 0) return this.die();

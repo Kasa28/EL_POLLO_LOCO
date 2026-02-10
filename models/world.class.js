@@ -262,7 +262,7 @@ class World {
     if (!this.isBossTriggerReached(boss)) return;
     boss.setActive();
     this.sfx.musicBoss();
-    this.statusBarBoss.setPercentage(boss.energy);
+    this.statusBarBoss.setPercentage((boss.energy / boss.MAX_ENERGY) * 100);
   }
 
   isBossTriggerReached(boss) {
@@ -272,7 +272,7 @@ class World {
   updateBossBar() {
     const boss = this.getBoss();
     if (!boss || !boss.isActive || boss.isRemoved) return;
-    this.statusBarBoss.setPercentage(boss.energy);
+    this.statusBarBoss.setPercentage((boss.energy / boss.MAX_ENERGY) * 100);
   }
 
   checkEndConditions() {
