@@ -155,23 +155,15 @@ class GameAudio {
 
   playLoop(groupName, key = groupName) {
   if (!this.canPlay()) return;
-
-  // läuft schon?
   const existing = this.loopingSfx.get(key);
   if (existing && !existing.paused) return;
-
   const src = this.pickRandomSrc(groupName);
   if (!src) return;
-
-  // falls vorhanden, alten Loop ersetzen
   if (existing) this.stopLoop(key);
-
   const a = this.createSfx(src);
   a.loop = true;
-
   this.loopingSfx.set(key, a);
-  this.activeSfx.add(a); // optional: damit stopAllSfx es auch killt
-
+  this.activeSfx.add(a); 
   a.play().catch(() => {});
 }
 
