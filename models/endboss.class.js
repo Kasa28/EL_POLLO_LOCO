@@ -2,48 +2,33 @@
  * @extends MovableObject
  */
 class Endboss extends MovableObject {
-  /** @type {number} */
-  height = 400;
-  /** @type {number} */
-  width = 250;
-  /** @type {number} */
-  y = 60;
+  /** @type {number} */ height = 400;
+  /** @type {number} */ width = 250;
+  /** @type {number} */ y = 60;
 
-  /** @type {number} */
-  energy = 6;
-  /** @type {number} */
-  MAX_ENERGY = 6;
+  /** @type {number} */ MAX_ENERGY = 6;
+  /** @type {number} */ energy = 6;
 
-  /** @type {boolean} */
-  isDead = false;
-  /** @type {boolean} */
-  isActive = false;
-  /** @type {boolean} */
-  isHurtBoss = false;
-  /** @type {boolean} */
-  isRemoved = false;
+  /** @type {boolean} */ isDead = false;
+  /** @type {boolean} */ isActive = false;
+  /** @type {boolean} */ isHurtBoss = false;
+  /** @type {boolean} */ isRemoved = false;
 
   /** @type {"walk"|"alert"|"attack"|"dead"} */
   currentState = "walk";
 
-  /** @type {number} */
-  speed = 1.2;
+  /** @type {number} */ speed = 1.2;
+  /** @type {number} */ lastAttack = 0;
+  /** @type {number} */ attackCooldown = 1200;
 
-  /** @type {number} */
-  lastAttack = 0;
+  /** @type {number|null} */ spriteIntervalId = null;
+  /** @type {number|null} */ logicIntervalId = null;
 
-  /** @type {number} */
-  attackCooldown = 1200;
-
-  /** @type {number|null} */
-  spriteIntervalId = null;
-
-  /** @type {number|null} */
-  logicIntervalId = null;
+  /** @type {number} */ bottlesHit = 0;
+  /** @type {number} */ BOTTLES_TO_KILL = 5;
 
   constructor() {
     super();
-    /** @type {number} */
     this.x = 2500;
     this.loadImage(endboss_assets.walking[0]);
     this.preloadImages();
@@ -154,9 +139,7 @@ class Endboss extends MovableObject {
    */
   moveDirectionTo(character) {
     const goLeft = character.x < this.x;
-    /** @type {boolean} */
     this.otherDirection = !goLeft;
-    /** @type {number} */
     this.walkDir = goLeft ? -1 : 1;
   }
 
@@ -236,15 +219,23 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * @param {number} [dmg=2]
+   * Bottle hit (counts hits) -> dies after 5 bottles.
    * @returns {void}
    */
-  hitBoss(dmg = 2) {
+  hitByBottle() {
     if (this.isDead) return;
-    this.energy -= dmg;
-    if (this.energy <= 0) return this.die();
+    this.bottlesHit++;
+    this.syncEnergyFromBottleHits();
+    if (this.bottlesHit >= this.BOTTLES_TO_KILL) return this.die();
     this.triggerHurt();
     this.clearHurtLater();
+  }
+
+  /** @returns {void} */
+  syncEnergyFromBottleHits() {
+    const ratio = this.bottlesHit / this.BOTTLES_TO_KILL;         
+    const left = Math.ceil(this.MAX_ENERGY * (1 - ratio));        
+    this.energy = Math.max(0, Math.min(this.MAX_ENERGY, left));
   }
 
   /** @returns {void} */

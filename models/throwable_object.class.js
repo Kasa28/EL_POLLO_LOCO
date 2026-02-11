@@ -197,7 +197,7 @@ class ThrowableObject extends MovableObject {
     if (!boss || boss.isDead || boss.isRemoved) return;
     if (!this.isColliding(boss)) return;
     this.hasHitBoss = true;
-    boss.hitBoss(2);
+    boss.hitByBottle();
     this.splash();
   }
 }
