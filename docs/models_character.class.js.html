@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/character.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/character.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Player character entity with movement, animation state handling,
+ * idle logic, damage/energy, and bottle throwing.
+ *
+ * @class
+ * @extends MovableObject
+ */
+class Character extends MovableObject {
+  /** @type {number} Rendered height in pixels. */
+  height = 300;
+
+  /** @type {number} Initial Y position (top-left). */
+  y = 80;
+
+  /** @type {number} Horizontal movement speed. */
+  speed = 8;
+
+  /** @type {string[]} Sprite paths for walking animation. */
+  images_walking = CHARACTER_ASSETS.walking;
+
+  /** @type {string[]} Sprite paths for jumping animation. */
+  images_jumping = CHARACTER_ASSETS.jumping;
+
+  /** @type {string[]} Sprite paths for dead animation. */
+  images_dead = CHARACTER_ASSETS.dead;
+
+  /** @type {string[]} Sprite paths for hurt animation. */
+  images_hurt = CHARACTER_ASSETS.hurt;
+
+  /** @type {string[]} Sprite paths for long-idle animation. */
+  images_long_idle = CHARACTER_ASSETS.longIdle;
+
+  /** @type {string[]} Sprite paths for idle animation. */
+  images_idle = CHARACTER_ASSETS.idle;
+
+  /** @type {number} Accumulated idle time in ms (increments by tick interval). */
+  idleTime = 0;
+
+  /** @type {number} Timestamp (ms) of last idle frame update. */
+  lastIdleFrame = 0;
+
+  /** @type {number} Character energy/health points. */
+  energy = 6;
+
+  /** @type {number} Collected coins count. */
+  coins = 0;
+
+  /** @type {number} Collected bottles count (ammo for throwing). */
+  bottles = 0;
+
+  /**
+   * Reference to the current game world.
+   * Set externally after construction.
+   * @type {any}  // Replace "any" with your real World type if you have one.
+   */
+  world;
+
+  /**
+   * Sound effects handler used by the character.
+   * @type {any} // Replace with a concrete typedef/interface if you want.
+   */
+  sfx;
+
+  /**
+   * Collision offsets for hitboxes (in px).
+   * @type {{top:number, bottom:number, left:number, right:number}}
+   */
+  offset = { top: 90, bottom: 5, left: 10, right: 30 };
+
+  /** @type {number} Current index/frame counter for dead sprite. */
+  deadFrame = 0;
+
+  /** @type {boolean} Whether the dead animation has been applied once. */
+  deadPlayedOnce = false;
+
+  /** @type {number} Throw cooldown duration in ms. */
+  THROW_COOLDOWN = 500;
+
+  /** @type {number} Timestamp (ms) of last successful throw. */
+  lastThrow = 0;
+
+  /**
+   * Create a new Character.
+   * @param {any} sfx Sound effects handler (must support stopLoop/playLoop/playOnce/playThrow).
+   */
+  constructor(sfx) {
+    super().loadImage(CHARACTER_ASSETS.startImage);
+    this.sfx = sfx;
+    this.preloadAll();
+  }
+
+  /**
+   * Starts the character logic loops (gravity, movement tick, animation tick).
+   * NOTE: This spawns intervals; ensure you clear them elsewhere if needed.
+   * @returns {void}
+   */
+  start() {
+    this.applyGravitaty();
+    setInterval(() => this.tickMove(), 1000 / 60);
+    setInterval(() => this.tickAnim(), 50);
+  }
+
+  /**
+   * Movement tick: reads inputs, moves, and updates camera.
+   * @returns {void}
+   */
+  tickMove() {
+    if (this.isDead()) return;
+    this.moveByKeys();
+    this.updateCamera();
+  }
+
+  /**
+   * Animation/state tick: dead -> throw -> hurt -> air -> ground
+   * @returns {void}
+   */
+  tickAnim() {
+    if (this.playDeadState()) return;
+    this.tryThrow();
+    if (this.playHurtState()) return;
+    if (this.playAirState()) return;
+    this.playGroundState();
+  }
+
+  /**
+   * Keyboard shortcut helper.
+   * @returns {any|undefined} The world's keyboard object if available.
+   */
+  kb() {
+    return this.world?.keyboard;
+  }
+
+  /**
+   * Stops walking loop sound.
+   * @returns {void}
+   */
+  stopWalk() {
+    this.sfx.stopLoop("walk");
+  }
+
+  /**
+   * Resets idle timers/counters.
+   * @returns {void}
+   */
+  resetIdle() {
+    this.idleTime = 0;
+    this.lastIdleFrame = 0;
+  }
+
+  /**
+   * Timestamp helper.
+   * @returns {number} Current timestamp in ms.
+   */
+  now() {
+    return Date.now();
+  }
+
+  /**
+   * Preloads all animation image lists into the cache.
+   * @returns {void}
+   */
+  preloadAll() {
+    [
+      this.images_walking,
+      this.images_jumping,
+      this.images_dead,
+      this.images_hurt,
+      this.images_long_idle,
+      this.images_idle,
+    ].forEach((list) => this.loadImages(list));
+  }
+
+  /**
+   * Handles horizontal movement based on pressed keys.
+   * @returns {void}
+   */
+  moveByKeys() {
+    const k = this.kb();
+    if (k.RIGHT) this.moveRightIfPossible();
+    if (k.LEFT) this.moveLeftIfPossible();
+  }
+
+  /**
+   * Moves right if not beyond the level end.
+   * @returns {void}
+   */
+  moveRightIfPossible() {
+    if (this.x >= this.world.level.level_end) return;
+    this.moveRight();
+    this.otherDirection = false;
+  }
+
+  /**
+   * Moves left if not beyond the level start.
+   * @returns {void}
+   */
+  moveLeftIfPossible() {
+    if (this.x &lt;= 0) return;
+    this.moveLeft();
+    this.otherDirection = true;
+  }
+
+  /**
+   * Updates the camera offset based on the character position.
+   * @returns {void}
+   */
+  updateCamera() {
+    this.world.camera_x = -this.x + 100;
+  }
+
+  /**
+   * Plays dead state (once) if character is dead.
+   * @returns {boolean} True if dead state handled and should short-circuit the tick.
+   */
+  playDeadState() {
+    if (!this.isDead()) return false;
+    this.stopWalk();
+    this.playDeadOnce();
+    return true;
+  }
+
+  /**
+   * Plays hurt animation if character is hurt.
+   * @returns {boolean} True if hurt state handled and should short-circuit the tick.
+   */
+  playHurtState() {
+    if (!this.isHurt()) return false;
+    this.stopWalk();
+    this.resetIdle();
+    this.playAnimation(this.images_hurt);
+    return true;
+  }
+
+  /**
+   * Plays air/jump animation if character is above ground.
+   * @returns {boolean} True if air state handled and should short-circuit the tick.
+   */
+  playAirState() {
+    if (!this.isAboveGround()) return false;
+    this.stopWalk();
+    this.playAnimation(this.images_jumping);
+    return true;
+  }
+
+  /**
+   * Ground state behavior: jump, walk, or idle.
+   * @returns {void}
+   */
+  playGroundState() {
+    if (this.wantJump()) return this.jump();
+    if (this.wantWalk()) return this.walk();
+    this.idle();
+  }
+
+  /**
+   * Whether jump is requested (UP pressed and on ground).
+   * @returns {boolean}
+   */
+  wantJump() {
+    return this.kb().UP &amp;&amp; !this.isAboveGround();
+  }
+
+  /**
+   * Whether walking is requested (LEFT or RIGHT).
+   * @returns {boolean}
+   */
+  wantWalk() {
+    const k = this.kb();
+    return k.RIGHT || k.LEFT;
+  }
+
+  /**
+   * Whether throwing is requested (D key).
+   * @returns {boolean}
+   */
+  wantThrow() {
+    return this.kb().D;
+  }
+
+  /**
+   * Plays walking animation and walking loop sound.
+   * @returns {void}
+   */
+  walk() {
+    this.playAnimation(this.images_walking);
+    this.resetIdle();
+    this.sfx.playLoop("walking_audio", "walk");
+  }
+
+  /**
+   * Idle behavior: updates idle time and plays idle/long-idle animations.
+   * Throttles frame updates to max every 500ms.
+   * @returns {void}
+   */
+  idle() {
+    this.stopWalk();
+    this.idleTime += 50;
+    const t = this.now();
+    if (t - this.lastIdleFrame &lt; 500) return;
+
+    this.playAnimation(
+      this.idleTime > 20000 ? this.images_long_idle : this.images_idle
+    );
+    this.lastIdleFrame = t;
+  }
+
+  /**
+   * Initiates jump: sets vertical speed and plays jump sound.
+   * @returns {void}
+   */
+  jump() {
+    this.resetIdle();
+    this.stopWalk();
+    this.speedY = 30;
+    this.sfx.playOnce("jumping_audio", 250);
+  }
+
+  /**
+   * Checks whether throwing is currently allowed.
+   * Requires world, bottles > 0, throw input, and cooldown passed.
+   * @returns {boolean}
+   */
+  throwReady() {
+    return (
+      this.world &amp;&amp;
+      this.bottles > 0 &amp;&amp;
+      this.wantThrow() &amp;&amp;
+      this.now() - this.lastThrow > this.THROW_COOLDOWN
+    );
+  }
+
+  /**
+   * Attempts to throw a bottle if ready.
+   * @returns {void}
+   */
+  tryThrow() {
+    if (!this.throwReady()) return;
+    this.spawnBottle();
+    this.consumeBottle();
+    this.lastThrow = this.now();
+  }
+
+  /**
+   * Creates and registers a new ThrowableObject in the world.
+   * @returns {void}
+   */
+  spawnBottle() {
+    const right = !this.otherDirection;
+
+    /** @type {ThrowableObject} */
+    const bottle = new ThrowableObject(
+      right ? this.x + 100 : this.x - 20,
+      this.y + 120,
+      right,
+      this.sfx
+    );
+
+    bottle.world = this.world;
+    this.world.throwableObjects.push(bottle);
+    this.sfx.playThrow();
+  }
+
+  /**
+   * Decreases bottle ammo and updates HUD.
+   * @returns {void}
+   */
+  consumeBottle() {
+    this.bottles = Math.max(0, this.bottles - 1);
+    this.world?.hud?.update();
+  }
+
+  /**
+   * Applies the dead image frame once (stays on last frame after finishing).
+   * @returns {void}
+   */
+  playDeadOnce() {
+    if (this.deadPlayedOnce) return;
+    const last = this.images_dead.length - 1;
+    this.img =
+      this.imageCache[this.images_dead[Math.min(this.deadFrame, last)]];
+    this.deadPlayedOnce = this.deadFrame++ >= last;
+  }
+
+  /**
+   * Applies damage to the character unless currently hurt.
+   * @param {number} [dmg=1] Damage amount.
+   * @returns {void}
+   */
+  hit(dmg = 1) {
+    if (this.isHurt()) return;
+    this.energy = Math.max(0, this.energy - dmg);
+    this.lastHit = this.now();
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="BottlePickup.html">BottlePickup</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coin.html">Coin</a></li><li><a href="CollidableObject.html">CollidableObject</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="GameAudio.html">GameAudio</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="StatusBar.html">StatusBar</a></li><li><a href="StatusBarController.html">StatusBarController</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#$">$</a></li><li><a href="global.html#CHARACTER_ASSETS">CHARACTER_ASSETS</a></li><li><a href="global.html#audioManager">audioManager</a></li><li><a href="global.html#bindClick">bindClick</a></li><li><a href="global.html#bindKeyboardEvents">bindKeyboardEvents</a></li><li><a href="global.html#bindOutsideMenuClose">bindOutsideMenuClose</a></li><li><a href="global.html#bindSoundToggle">bindSoundToggle</a></li><li><a href="global.html#bindSoundUnlock">bindSoundUnlock</a></li><li><a href="global.html#bindUiButtons">bindUiButtons</a></li><li><a href="global.html#bottle_assets">bottle_assets</a></li><li><a href="global.html#canvas">canvas</a></li><li><a href="global.html#chicken_assets">chicken_assets</a></li><li><a href="global.html#closeControls">closeControls</a></li><li><a href="global.html#cloud_assets">cloud_assets</a></li><li><a href="global.html#coin_assets">coin_assets</a></li><li><a href="global.html#createAudioManager">createAudioManager</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#endboss_assets">endboss_assets</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#hideEndScreen">hideEndScreen</a></li><li><a href="global.html#hideStartScreen">hideStartScreen</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAudioManager">initAudioManager</a></li><li><a href="global.html#initCanvasAndKeyboard">initCanvasAndKeyboard</a></li><li><a href="global.html#initLevel">initLevel</a></li><li><a href="global.html#initSoundDefaultOff">initSoundDefaultOff</a></li><li><a href="global.html#initSoundIcon">initSoundIcon</a></li><li><a href="global.html#initUiAndEvents">initUiAndEvents</a></li><li><a href="global.html#keyboard">keyboard</a></li><li><a href="global.html#level_1">level_1</a></li><li><a href="global.html#onGameEnd">onGameEnd</a></li><li><a href="global.html#openControls">openControls</a></li><li><a href="global.html#prepareGameUi">prepareGameUi</a></li><li><a href="global.html#renderSoundIcon">renderSoundIcon</a></li><li><a href="global.html#replayGame">replayGame</a></li><li><a href="global.html#resetLevel">resetLevel</a></li><li><a href="global.html#setEndScreenImage">setEndScreenImage</a></li><li><a href="global.html#setKey">setKey</a></li><li><a href="global.html#setupSoundButton">setupSoundButton</a></li><li><a href="global.html#showEndScreen">showEndScreen</a></li><li><a href="global.html#showMobileControls">showMobileControls</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showStartScreen">showStartScreen</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#startIntroMusic">startIntroMusic</a></li><li><a href="global.html#statusbar_assets">statusbar_assets</a></li><li><a href="global.html#stopWorld">stopWorld</a></li><li><a href="global.html#throwable_assets">throwable_assets</a></li><li><a href="global.html#toggleFullscreen">toggleFullscreen</a></li><li><a href="global.html#unlockAudioOnce">unlockAudioOnce</a></li><li><a href="global.html#updateSoundIcon">updateSoundIcon</a></li><li><a href="global.html#world">world</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 18:26:51 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

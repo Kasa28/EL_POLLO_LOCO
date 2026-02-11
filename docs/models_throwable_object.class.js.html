@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/throwable_object.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/throwable_object.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @extends MovableObject
+ */
+class ThrowableObject extends MovableObject {
+  /** @type {number} */
+  width = 50;
+  /** @type {number} */
+  height = 100;
+  /** @type {number} */
+  groundY = 450;
+
+  /** @type {any|null} */
+  world = null;
+
+  /** @type {boolean} */
+  hasHitEnemy = false;
+  /** @type {boolean} */
+  hasHitBoss = false;
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {boolean} [throwRight=true]
+   * @param {{ play?: (name:string)=>void, playOnce?: (name:string, cd?:number)=>void } | any} [sfx]
+   */
+  constructor(x, y, throwRight = true, sfx) {
+    super().loadImage(throwable_assets.rotation[0]);
+    this.loadImages(throwable_assets.rotation);
+    this.loadImages(throwable_assets.splash);
+    /** @type {any} */
+    this.sfx = sfx;
+    this.setStartPosition(x, y);
+    this.setThrowDirection(throwRight);
+    this.resetThrowPhysics();
+    this.startFlying();
+    this.startRotation();
+  }
+
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @returns {void}
+   */
+  setStartPosition(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
+   * @param {boolean} throwRight
+   * @returns {void}
+   */
+  setThrowDirection(throwRight) {
+    /** @type {number} */
+    this.speedX = throwRight ? 10 : -10;
+  }
+
+  /** @returns {void} */
+  resetThrowPhysics() {
+    /** @type {boolean} */
+    this.isSplashed = false;
+    /** @type {number} */
+    this.speedY = 18;
+    /** @type {number} */
+    this.gravity = 1.2;
+  }
+
+  /** @returns {void} */
+  startFlying() {
+    /** @type {number} */
+    this.flyInterval = setInterval(() => this.updateFlightStep(), 25);
+  }
+
+  /** @returns {void} */
+  updateFlightStep() {
+    if (this.isSplashed) return;
+    this.moveHorizontal();
+    this.applyGravity();
+    this.moveVertical();
+    this.checkHits();
+    this.trySplashOnGround();
+  }
+
+  /** @returns {void} */
+  moveHorizontal() {
+    this.x += this.speedX;
+  }
+
+  /** @returns {void} */
+  moveVertical() {
+    this.y -= this.speedY;
+  }
+
+  /** @returns {void} */
+  applyGravity() {
+    this.speedY -= this.gravity;
+  }
+
+  /** @returns {void} */
+  trySplashOnGround() {
+    if (!this.isFallingDown()) return;
+    if (!this.hasHitGround()) return;
+    this.splash();
+  }
+
+  /** @returns {boolean} */
+  isFallingDown() {
+    return this.speedY &lt; 0;
+  }
+
+  /** @returns {boolean} */
+  hasHitGround() {
+    const bottom = this.y + this.height;
+    return bottom >= this.groundY;
+  }
+
+  /** @returns {void} */
+  startRotation() {
+    /** @type {number} */
+    this.rotInterval = setInterval(() => this.updateRotationFrame(), 80);
+  }
+
+  /** @returns {void} */
+  updateRotationFrame() {
+    if (this.isSplashed) return;
+    this.playAnimation(throwable_assets.rotation);
+  }
+
+  /** @returns {void} */
+  splash() {
+    if (this.isSplashed) return;
+    this.isSplashed = true;
+    this.sfx?.play?.("breaking");
+    this.stopFlightLoop();
+    this.stopRotationLoop();
+    this.startSplashAnimation();
+    this.scheduleRemove();
+  }
+
+  /** @returns {void} */
+  stopFlightLoop() {
+    clearInterval(this.flyInterval);
+  }
+
+  /** @returns {void} */
+  stopRotationLoop() {
+    clearInterval(this.rotInterval);
+  }
+
+  /** @returns {void} */
+  startSplashAnimation() {
+    /** @type {number} */
+    this.splashInterval = setInterval(() => {
+      this.playAnimation(throwable_assets.splash);
+    }, 60);
+  }
+
+  /** @returns {void} */
+  scheduleRemove() {
+    setTimeout(() => this.removeSplash(), 400);
+  }
+
+  /** @returns {void} */
+  removeSplash() {
+    clearInterval(this.splashInterval);
+    /** @type {boolean} */
+    this.isRemoved = true;
+    this.x = -9999;
+  }
+
+  /** @returns {void} */
+  checkHits() {
+    if (!this.world) return;
+    this.hitChickens();
+    this.hitBoss();
+  }
+
+  /** @returns {void} */
+  hitChickens() {
+    if (this.hasHitEnemy) return;
+    const enemies = this.world.level?.enemies || [];
+    for (const enemy of enemies) {
+      if (!(enemy instanceof Chicken)) continue;
+      if (enemy.isDead) continue;
+      if (!this.isColliding(enemy)) continue;
+      this.hasHitEnemy = true;
+      enemy.die();
+      this.splash();
+      return;
+    }
+  }
+
+  /** @returns {void} */
+  hitBoss() {
+    if (this.hasHitBoss) return;
+    const boss = (this.world.level?.enemies || []).find((e) => e instanceof Endboss);
+    if (!boss || boss.isDead || boss.isRemoved) return;
+    if (!this.isColliding(boss)) return;
+    this.hasHitBoss = true;
+    boss.hitBoss(2);
+    this.splash();
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="BottlePickup.html">BottlePickup</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coin.html">Coin</a></li><li><a href="CollidableObject.html">CollidableObject</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="GameAudio.html">GameAudio</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="StatusBar.html">StatusBar</a></li><li><a href="StatusBarController.html">StatusBarController</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#$">$</a></li><li><a href="global.html#CHARACTER_ASSETS">CHARACTER_ASSETS</a></li><li><a href="global.html#audioManager">audioManager</a></li><li><a href="global.html#bindClick">bindClick</a></li><li><a href="global.html#bindKeyboardEvents">bindKeyboardEvents</a></li><li><a href="global.html#bindOutsideMenuClose">bindOutsideMenuClose</a></li><li><a href="global.html#bindSoundToggle">bindSoundToggle</a></li><li><a href="global.html#bindSoundUnlock">bindSoundUnlock</a></li><li><a href="global.html#bindUiButtons">bindUiButtons</a></li><li><a href="global.html#bottle_assets">bottle_assets</a></li><li><a href="global.html#canvas">canvas</a></li><li><a href="global.html#chicken_assets">chicken_assets</a></li><li><a href="global.html#closeControls">closeControls</a></li><li><a href="global.html#cloud_assets">cloud_assets</a></li><li><a href="global.html#coin_assets">coin_assets</a></li><li><a href="global.html#createAudioManager">createAudioManager</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#endboss_assets">endboss_assets</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#hideEndScreen">hideEndScreen</a></li><li><a href="global.html#hideStartScreen">hideStartScreen</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAudioManager">initAudioManager</a></li><li><a href="global.html#initCanvasAndKeyboard">initCanvasAndKeyboard</a></li><li><a href="global.html#initLevel">initLevel</a></li><li><a href="global.html#initSoundDefaultOff">initSoundDefaultOff</a></li><li><a href="global.html#initSoundIcon">initSoundIcon</a></li><li><a href="global.html#initUiAndEvents">initUiAndEvents</a></li><li><a href="global.html#keyboard">keyboard</a></li><li><a href="global.html#level_1">level_1</a></li><li><a href="global.html#onGameEnd">onGameEnd</a></li><li><a href="global.html#openControls">openControls</a></li><li><a href="global.html#prepareGameUi">prepareGameUi</a></li><li><a href="global.html#renderSoundIcon">renderSoundIcon</a></li><li><a href="global.html#replayGame">replayGame</a></li><li><a href="global.html#resetLevel">resetLevel</a></li><li><a href="global.html#setEndScreenImage">setEndScreenImage</a></li><li><a href="global.html#setKey">setKey</a></li><li><a href="global.html#setupSoundButton">setupSoundButton</a></li><li><a href="global.html#showEndScreen">showEndScreen</a></li><li><a href="global.html#showMobileControls">showMobileControls</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showStartScreen">showStartScreen</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#startIntroMusic">startIntroMusic</a></li><li><a href="global.html#statusbar_assets">statusbar_assets</a></li><li><a href="global.html#stopWorld">stopWorld</a></li><li><a href="global.html#throwable_assets">throwable_assets</a></li><li><a href="global.html#toggleFullscreen">toggleFullscreen</a></li><li><a href="global.html#unlockAudioOnce">unlockAudioOnce</a></li><li><a href="global.html#updateSoundIcon">updateSoundIcon</a></li><li><a href="global.html#world">world</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 18:26:51 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

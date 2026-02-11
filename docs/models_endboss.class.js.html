@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/endboss.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/endboss.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @extends MovableObject
+ */
+class Endboss extends MovableObject {
+  /** @type {number} */
+  height = 400;
+  /** @type {number} */
+  width = 250;
+  /** @type {number} */
+  y = 60;
+
+  /** @type {number} */
+  energy = 6;
+  /** @type {number} */
+  MAX_ENERGY = 6;
+
+  /** @type {boolean} */
+  isDead = false;
+  /** @type {boolean} */
+  isActive = false;
+  /** @type {boolean} */
+  isHurtBoss = false;
+  /** @type {boolean} */
+  isRemoved = false;
+
+  /** @type {"walk"|"alert"|"attack"|"dead"} */
+  currentState = "walk";
+
+  /** @type {number} */
+  speed = 1.2;
+
+  /** @type {number} */
+  lastAttack = 0;
+
+  /** @type {number} */
+  attackCooldown = 1200;
+
+  /** @type {number|null} */
+  spriteIntervalId = null;
+
+  /** @type {number|null} */
+  logicIntervalId = null;
+
+  constructor() {
+    super();
+    /** @type {number} */
+    this.x = 2500;
+    this.loadImage(endboss_assets.walking[0]);
+    this.preloadImages();
+    this.animate();
+  }
+
+  /** @returns {void} */
+  preloadImages() {
+    this.loadImages(endboss_assets.walking);
+    this.loadImages(endboss_assets.alert);
+    this.loadImages(endboss_assets.attack);
+    this.loadImages(endboss_assets.hurt);
+    this.loadImages(endboss_assets.dead);
+  }
+
+  /** @returns {void} */
+  animate() {
+    this.stop();
+    this.startSpriteLoop();
+    this.startLogicLoop();
+  }
+
+  /** @returns {void} */
+  stop() {
+    if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
+    if (this.logicIntervalId) clearInterval(this.logicIntervalId);
+    this.spriteIntervalId = null;
+    this.logicIntervalId = null;
+  }
+
+  /** @returns {void} */
+  startSpriteLoop() {
+    this.spriteIntervalId = setInterval(() => this.animateSprite(), 160);
+  }
+
+  /** @returns {void} */
+  startLogicLoop() {
+    this.logicIntervalId = setInterval(() => this.updateLogic(), 1000 / 60);
+  }
+
+  /** @returns {void} */
+  animateSprite() {
+    this.playAnimation(this.getSpriteFrames());
+  }
+
+  /** @returns {string[]} */
+  getSpriteFrames() {
+    if (this.isDead) return endboss_assets.dead;
+    if (this.isHurtBoss) return endboss_assets.hurt;
+    if (!this.isActive) return endboss_assets.walking;
+    if (this.currentState === "alert") return endboss_assets.alert;
+    if (this.currentState === "attack") return endboss_assets.attack;
+    return endboss_assets.walking;
+  }
+
+  /** @returns {void} */
+  updateLogic() {
+    if (this.shouldSkipLogic()) return;
+    const character = this.world.character;
+    const distance = this.getDistanceTo(character);
+    if (this.isInAlert()) return;
+    if (this.isInAttackRange(distance)) return this.attack(character);
+    this.walkTowards(character);
+  }
+
+  /** @returns {boolean} */
+  shouldSkipLogic() {
+    if (!this.world) return true;
+    if (this.world.ending || this.world.gameOver) return true;
+    if (!this.isActive || this.isDead) return true;
+    return false;
+  }
+
+  /**
+   * @param {{x:number}} character
+   * @returns {number}
+   */
+  getDistanceTo(character) {
+    return Math.abs(character.x - this.x);
+  }
+
+  /** @returns {boolean} */
+  isInAlert() {
+    return this.currentState === "alert";
+  }
+
+  /**
+   * @param {number} distance
+   * @returns {boolean}
+   */
+  isInAttackRange(distance) {
+    return distance &lt; 95;
+  }
+
+  /**
+   * @param {{x:number}} character
+   * @returns {void}
+   */
+  walkTowards(character) {
+    this.currentState = "walk";
+    this.moveDirectionTo(character);
+    this.moveStep();
+  }
+
+  /**
+   * @param {{x:number}} character
+   * @returns {void}
+   */
+  moveDirectionTo(character) {
+    const goLeft = character.x &lt; this.x;
+    /** @type {boolean} */
+    this.otherDirection = !goLeft;
+    /** @type {number} */
+    this.walkDir = goLeft ? -1 : 1;
+  }
+
+  /** @returns {void} */
+  moveStep() {
+    this.x += this.walkDir * this.speed;
+  }
+
+  /** @returns {void} */
+  setActive() {
+    if (this.isActive) return;
+    this.isActive = true;
+    this.setAlertState();
+    this.leaveAlertLater();
+  }
+
+  /** @returns {void} */
+  setAlertState() {
+    this.currentState = "alert";
+  }
+
+  /** @returns {void} */
+  leaveAlertLater() {
+    setTimeout(() => this.trySetWalkState(), 1200);
+  }
+
+  /** @returns {void} */
+  trySetWalkState() {
+    if (!this.isDead) this.currentState = "walk";
+  }
+
+  /** @returns {boolean} */
+  canAttack() {
+    return Date.now() - this.lastAttack > this.attackCooldown;
+  }
+
+  /**
+   * @param {{hit:(dmg:number)=>void}} character
+   * @returns {void}
+   */
+  attack(character) {
+    if (this.shouldSkipAttack()) return;
+    if (!this.canAttack()) return;
+    this.startAttack();
+    this.doAttackDamage(character);
+    this.finishAttackLater();
+  }
+
+  /** @returns {boolean} */
+  shouldSkipAttack() {
+    if (!this.world) return true;
+    if (this.world.ending || this.world.gameOver) return true;
+    if (this.currentState === "attack") return true;
+    if (this.isDead) return true;
+    return false;
+  }
+
+  /** @returns {void} */
+  startAttack() {
+    this.currentState = "attack";
+    this.lastAttack = Date.now();
+    this.world?.sfx?.playOnce("attack_audio", 800);
+  }
+
+  /**
+   * @param {{hit:(dmg:number)=>void}} character
+   * @returns {void}
+   */
+  doAttackDamage(character) {
+    character.hit(2);
+    this.world?.hud?.update?.();
+  }
+
+  /** @returns {void} */
+  finishAttackLater() {
+    setTimeout(() => this.trySetWalkState(), 600);
+  }
+
+  /**
+   * @param {number} [dmg=2]
+   * @returns {void}
+   */
+  hitBoss(dmg = 2) {
+    if (this.isDead) return;
+    this.energy -= dmg;
+    if (this.energy &lt;= 0) return this.die();
+    this.triggerHurt();
+    this.clearHurtLater();
+  }
+
+  /** @returns {void} */
+  triggerHurt() {
+    this.isHurtBoss = true;
+  }
+
+  /** @returns {void} */
+  clearHurtLater() {
+    setTimeout(() => (this.isHurtBoss = false), 350);
+  }
+
+  /** @returns {void} */
+  die() {
+    if (this.isDead) return;
+    this.energy = 0;
+    this.isDead = true;
+    this.isHurtBoss = false;
+    this.currentState = "dead";
+    this.stopLogic();
+    this.animateSprite();
+    setTimeout(() => {
+      this.isRemoved = true;
+      this.stopSprite();
+    }, 1600);
+  }
+
+  /** @returns {void} */
+  stopSprite() {
+    if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
+    this.spriteIntervalId = null;
+  }
+
+  /** @returns {void} */
+  stopLogic() {
+    if (this.logicIntervalId) clearInterval(this.logicIntervalId);
+    this.logicIntervalId = null;
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="BottlePickup.html">BottlePickup</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coin.html">Coin</a></li><li><a href="CollidableObject.html">CollidableObject</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="GameAudio.html">GameAudio</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="StatusBar.html">StatusBar</a></li><li><a href="StatusBarController.html">StatusBarController</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#$">$</a></li><li><a href="global.html#CHARACTER_ASSETS">CHARACTER_ASSETS</a></li><li><a href="global.html#audioManager">audioManager</a></li><li><a href="global.html#bindClick">bindClick</a></li><li><a href="global.html#bindKeyboardEvents">bindKeyboardEvents</a></li><li><a href="global.html#bindOutsideMenuClose">bindOutsideMenuClose</a></li><li><a href="global.html#bindSoundToggle">bindSoundToggle</a></li><li><a href="global.html#bindSoundUnlock">bindSoundUnlock</a></li><li><a href="global.html#bindUiButtons">bindUiButtons</a></li><li><a href="global.html#bottle_assets">bottle_assets</a></li><li><a href="global.html#canvas">canvas</a></li><li><a href="global.html#chicken_assets">chicken_assets</a></li><li><a href="global.html#closeControls">closeControls</a></li><li><a href="global.html#cloud_assets">cloud_assets</a></li><li><a href="global.html#coin_assets">coin_assets</a></li><li><a href="global.html#createAudioManager">createAudioManager</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#endboss_assets">endboss_assets</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#hideEndScreen">hideEndScreen</a></li><li><a href="global.html#hideStartScreen">hideStartScreen</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAudioManager">initAudioManager</a></li><li><a href="global.html#initCanvasAndKeyboard">initCanvasAndKeyboard</a></li><li><a href="global.html#initLevel">initLevel</a></li><li><a href="global.html#initSoundDefaultOff">initSoundDefaultOff</a></li><li><a href="global.html#initSoundIcon">initSoundIcon</a></li><li><a href="global.html#initUiAndEvents">initUiAndEvents</a></li><li><a href="global.html#keyboard">keyboard</a></li><li><a href="global.html#level_1">level_1</a></li><li><a href="global.html#onGameEnd">onGameEnd</a></li><li><a href="global.html#openControls">openControls</a></li><li><a href="global.html#prepareGameUi">prepareGameUi</a></li><li><a href="global.html#renderSoundIcon">renderSoundIcon</a></li><li><a href="global.html#replayGame">replayGame</a></li><li><a href="global.html#resetLevel">resetLevel</a></li><li><a href="global.html#setEndScreenImage">setEndScreenImage</a></li><li><a href="global.html#setKey">setKey</a></li><li><a href="global.html#setupSoundButton">setupSoundButton</a></li><li><a href="global.html#showEndScreen">showEndScreen</a></li><li><a href="global.html#showMobileControls">showMobileControls</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showStartScreen">showStartScreen</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#startIntroMusic">startIntroMusic</a></li><li><a href="global.html#statusbar_assets">statusbar_assets</a></li><li><a href="global.html#stopWorld">stopWorld</a></li><li><a href="global.html#throwable_assets">throwable_assets</a></li><li><a href="global.html#toggleFullscreen">toggleFullscreen</a></li><li><a href="global.html#unlockAudioOnce">unlockAudioOnce</a></li><li><a href="global.html#updateSoundIcon">updateSoundIcon</a></li><li><a href="global.html#world">world</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 18:26:51 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

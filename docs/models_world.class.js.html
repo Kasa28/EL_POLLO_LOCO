@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/world.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/world.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Main game world: owns canvas rendering, game loops, collisions, pickups and end conditions.
+ */
+class World {
+  /** @type {number} */
+  camera_x = 0;
+
+  /** @type {ThrowableObject[]} */
+  throwableObjects = [];
+
+  /** @type {boolean} */
+  gameOver = false;
+
+  /** @type {boolean} */
+  ending = false;
+
+  /** @type {number|null} */
+  tickIntervalId = null;
+
+  /** @type {number|null} */
+  rafId = null;
+
+  /** @type {number} */
+  MAX_BOTTLES = 6;
+
+  /** @type {number} */
+  MAX_COINS = 6;
+
+  /** @type {number} */
+  MAX_HEALTH = 6;
+
+  /**
+   * @param {HTMLCanvasElement} canvas
+   * @param {Keyboard} keyboard
+   * @param {(won:boolean)=>void} onEnd
+   * @param {GameAudio} sfx
+   */
+  constructor(canvas, keyboard, onEnd, sfx) {
+    /** @type {HTMLCanvasElement} */
+    this.canvas = canvas;
+    /** @type {CanvasRenderingContext2D} */
+    this.ctx = canvas.getContext("2d");
+    /** @type {Keyboard} */
+    this.keyboard = keyboard;
+    /** @type {(won:boolean)=>void} */
+    this.onEnd = onEnd;
+    /** @type {GameAudio} */
+    this.sfx = sfx;
+    /** @type {Level} */
+    this.level = level_1;
+    this.initGameObjects();
+    this.linkWorldToObjects();
+    /** @type {StatusBarController} */
+    this.hud = new StatusBarController(this, statusbar_assets, {
+      health: this.MAX_HEALTH,
+      coins: this.MAX_COINS,
+      bottles: this.MAX_BOTTLES,
+    });
+
+    this.hud.update();
+    this.startLoops();
+  }
+
+  /** @returns {void} */
+  initGameObjects() {
+    /** @type {Character} */
+    this.character = new Character(this.sfx);
+  }
+
+  /** @returns {void} */
+  linkWorldToObjects() {
+    this.character.world = this;
+    this.character.start();
+    this.level.enemies?.forEach((e) => (e.world = this));
+    const boss = this.getBoss();
+    if (boss) boss.world = this;
+    this.level.clouds?.forEach((c) => (c.world = this));
+  }
+
+  /** @returns {Endboss|undefined} */
+  getBoss() {
+    return this.level.enemies?.find((e) => e instanceof Endboss);
+  }
+
+  /** @returns {void} */
+  startLoops() {
+    this.startTickLoop();
+    this.startDrawLoop();
+  }
+
+  /** @returns {void} */
+  startTickLoop() {
+    this.tickIntervalId = setInterval(() => {
+      if (this.gameOver || this.ending) return;
+      this.updateTick();
+      this.cleanupAfterTick();
+      this.checkEndConditions();
+    }, 50);
+  }
+
+  /** @returns {void} */
+  startDrawLoop() {
+    const draw = () => {
+      if (this.gameOver) return;
+      this.drawFrame();
+      this.rafId = requestAnimationFrame(draw);
+    };
+    draw();
+  }
+
+  /** @returns {void} */
+  stopLoops() {
+    if (this.tickIntervalId) clearInterval(this.tickIntervalId);
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.tickIntervalId = null;
+    this.rafId = null;
+  }
+
+  /** @returns {void} */
+  updateTick() {
+    this.handleEnemyCollisions();
+    this.collectCoins();
+    this.collectBottles();
+    this.activateBossIfNear();
+    this.hud.update();
+  }
+
+  /** @returns {void} */
+  cleanupAfterTick() {
+    this.removeDeadEnemies();
+    this.removeInvisibleBottles();
+  }
+
+  /** @returns {void} */
+  removeDeadEnemies() {
+    this.level.enemies = (this.level.enemies || []).filter(
+      (e) => e instanceof Endboss || !e.isRemoved
+    );
+  }
+
+  /** @returns {void} */
+  removeInvisibleBottles() {
+    this.throwableObjects = this.throwableObjects.filter((b) => !b.isRemoved);
+  }
+
+  /** @returns {void} */
+  drawFrame() {
+    this.clearCanvas();
+    this.drawWorld();
+    this.drawHud();
+  }
+
+  /** @returns {void} */
+  clearCanvas() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  /** @returns {void} */
+  drawWorld() {
+    this.ctx.translate(this.camera_x, 0);
+    this.drawLayerObjects();
+    this.drawObject(this.character);
+    this.ctx.translate(-this.camera_x, 0);
+  }
+
+  /** @returns {void} */
+  drawLayerObjects() {
+    this.drawObjects(this.level.backgroundObjects);
+    this.drawObjects(this.level.clouds);
+    this.drawObjects(this.level.enemies);
+    this.drawObjects(this.level.coins);
+    this.drawObjects(this.level.bottles);
+    this.drawObjects(this.throwableObjects);
+  }
+
+  /** @returns {void} */
+  drawHud() {
+    this.hud.draw(this.ctx);
+  }
+
+  /**
+   * @param {Array&lt;any>|undefined|null} list
+   * @returns {void}
+   */
+  drawObjects(list) {
+    if (!list) return;
+    list.forEach((obj) => this.drawObject(obj));
+  }
+
+  /**
+   * @param {any} obj
+   * @returns {void}
+   */
+  drawObject(obj) {
+    if (!obj || obj.isRemoved) return;
+    if (obj.otherDirection) this.flipObject(obj);
+    obj.draw(this.ctx);
+    if (obj.otherDirection) this.unflipObject(obj);
+  }
+
+  /**
+   * @param {{width:number,x:number}} obj
+   * @returns {void}
+   */
+  flipObject(obj) {
+    this.ctx.save();
+    this.ctx.translate(obj.width, 0);
+    this.ctx.scale(-1, 1);
+    obj.x *= -1;
+  }
+
+  /**
+   * @param {{x:number}} obj
+   * @returns {void}
+   */
+  unflipObject(obj) {
+    obj.x *= -1;
+    this.ctx.restore();
+  }
+
+  /** @returns {void} */
+  handleEnemyCollisions() {
+    this.level.enemies?.forEach((enemy) => this.handleSingleEnemyCollision(enemy));
+  }
+
+  /**
+   * @param {any} enemy
+   * @returns {void}
+   */
+  handleSingleEnemyCollision(enemy) {
+    if (!enemy || enemy.isRemoved) return;
+    if (!this.character.isColliding(enemy)) return;
+    if (enemy instanceof Chicken) return this.handleChickenTouch(enemy);
+    return this.handleOtherEnemyTouch(enemy);
+  }
+
+  /**
+   * @param {Chicken} chicken
+   * @returns {void}
+   */
+  handleChickenTouch(chicken) {
+    if (chicken.isDead) return;
+    if (this.isStompHit(chicken)) {
+      chicken.die();
+      this.character.speedY = 15;
+      return;
+    }
+    this.damagePlayer();
+  }
+
+  /**
+   * @param {any} enemy
+   * @returns {void}
+   */
+  handleOtherEnemyTouch(enemy) {
+    if (enemy.isDead) return;
+    this.damagePlayer();
+  }
+
+  /** @returns {void} */
+  damagePlayer() {
+    this.character.hit();
+    this.sfx.playHurt();
+  }
+
+  /**
+   * @param {{y:number}} enemy
+   * @returns {boolean}
+   */
+  isStompHit(enemy) {
+    const falling = this.character.speedY &lt; 0;
+    if (!falling) return false;
+    const charBottomNow = this.character.y + this.character.height;
+    const charBottomPrev =
+      this.character.y + this.character.speedY + this.character.height;
+    const enemyTop = enemy.y;
+    const MARGIN = 35;
+    const cameFromAbove = charBottomPrev &lt;= enemyTop + MARGIN;
+    const isNowAtOrBelowTop = charBottomNow >= enemyTop;
+    return cameFromAbove &amp;&amp; isNowAtOrBelowTop;
+  }
+
+  /** @returns {void} */
+  collectCoins() {
+    if (!this.level.coins) return;
+    this.level.coins = this.level.coins.filter((coin) => {
+      if (!this.character.isColliding(coin)) return true;
+      this.character.coins++;
+      this.sfx.playCollect();
+      return false;
+    });
+  }
+
+  /** @returns {void} */
+  collectBottles() {
+    if (!this.level.bottles) return;
+    this.level.bottles = this.level.bottles.filter((bottle) => {
+      if (!this.character.isColliding(bottle)) return true;
+      this.character.bottles++;
+      this.sfx.playCollect();
+      return false;
+    });
+  }
+
+  /** @returns {void} */
+  activateBossIfNear() {
+    const boss = this.getBoss();
+    if (!boss) return;
+    if (boss.isDead || boss.isActive) return;
+    if (!this.isBossTriggerReached(boss)) return;
+    boss.setActive();
+    this.sfx.musicBoss();
+  }
+
+  /**
+   * @param {{x:number}} boss
+   * @returns {boolean}
+   */
+  isBossTriggerReached(boss) {
+    return this.character.x > boss.x - 500;
+  }
+
+  /** @returns {void} */
+  checkEndConditions() {
+    if (this.isPlayerDead()) return this.finishGame(false);
+    if (this.isBossRemovedAfterDeath()) return this.finishGame(true);
+  }
+
+  /** @returns {boolean} */
+  isPlayerDead() {
+    return this.character.energy &lt;= 0;
+  }
+
+  /** @returns {void} */
+  syncHud() {
+    this.hud.update();
+  }
+
+  /** @returns {boolean} */
+  isBossRemovedAfterDeath() {
+    const boss = this.getBoss();
+    return !!boss &amp;&amp; boss.isDead &amp;&amp; boss.isRemoved;
+  }
+
+  /**
+   * @param {boolean} won
+   * @returns {void}
+   */
+  finishGame(won) {
+    if (this.gameOver || this.ending) return;
+    this.ending = true;
+    const boss = this.getBoss();
+    boss?.stop?.();
+    this.sfx.endGame(won);
+    setTimeout(() => {
+      this.gameOver = true;
+      this.stopLoops();
+      if (typeof this.onEnd === "function") this.onEnd(won);
+    }, 400);
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="BottlePickup.html">BottlePickup</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coin.html">Coin</a></li><li><a href="CollidableObject.html">CollidableObject</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="GameAudio.html">GameAudio</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="StatusBar.html">StatusBar</a></li><li><a href="StatusBarController.html">StatusBarController</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#$">$</a></li><li><a href="global.html#CHARACTER_ASSETS">CHARACTER_ASSETS</a></li><li><a href="global.html#audioManager">audioManager</a></li><li><a href="global.html#bindClick">bindClick</a></li><li><a href="global.html#bindKeyboardEvents">bindKeyboardEvents</a></li><li><a href="global.html#bindOutsideMenuClose">bindOutsideMenuClose</a></li><li><a href="global.html#bindSoundToggle">bindSoundToggle</a></li><li><a href="global.html#bindSoundUnlock">bindSoundUnlock</a></li><li><a href="global.html#bindUiButtons">bindUiButtons</a></li><li><a href="global.html#bottle_assets">bottle_assets</a></li><li><a href="global.html#canvas">canvas</a></li><li><a href="global.html#chicken_assets">chicken_assets</a></li><li><a href="global.html#closeControls">closeControls</a></li><li><a href="global.html#cloud_assets">cloud_assets</a></li><li><a href="global.html#coin_assets">coin_assets</a></li><li><a href="global.html#createAudioManager">createAudioManager</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#endboss_assets">endboss_assets</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#hideEndScreen">hideEndScreen</a></li><li><a href="global.html#hideStartScreen">hideStartScreen</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAudioManager">initAudioManager</a></li><li><a href="global.html#initCanvasAndKeyboard">initCanvasAndKeyboard</a></li><li><a href="global.html#initLevel">initLevel</a></li><li><a href="global.html#initSoundDefaultOff">initSoundDefaultOff</a></li><li><a href="global.html#initSoundIcon">initSoundIcon</a></li><li><a href="global.html#initUiAndEvents">initUiAndEvents</a></li><li><a href="global.html#keyboard">keyboard</a></li><li><a href="global.html#level_1">level_1</a></li><li><a href="global.html#onGameEnd">onGameEnd</a></li><li><a href="global.html#openControls">openControls</a></li><li><a href="global.html#prepareGameUi">prepareGameUi</a></li><li><a href="global.html#renderSoundIcon">renderSoundIcon</a></li><li><a href="global.html#replayGame">replayGame</a></li><li><a href="global.html#resetLevel">resetLevel</a></li><li><a href="global.html#setEndScreenImage">setEndScreenImage</a></li><li><a href="global.html#setKey">setKey</a></li><li><a href="global.html#setupSoundButton">setupSoundButton</a></li><li><a href="global.html#showEndScreen">showEndScreen</a></li><li><a href="global.html#showMobileControls">showMobileControls</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showStartScreen">showStartScreen</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#startIntroMusic">startIntroMusic</a></li><li><a href="global.html#statusbar_assets">statusbar_assets</a></li><li><a href="global.html#stopWorld">stopWorld</a></li><li><a href="global.html#throwable_assets">throwable_assets</a></li><li><a href="global.html#toggleFullscreen">toggleFullscreen</a></li><li><a href="global.html#unlockAudioOnce">unlockAudioOnce</a></li><li><a href="global.html#updateSoundIcon">updateSoundIcon</a></li><li><a href="global.html#world">world</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 18:26:51 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

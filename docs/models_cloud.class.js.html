@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/cloud.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/cloud.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Moving cloud background object.
+ * @extends MovableObject
+ */
+class Cloud extends MovableObject {
+  /** @type {number} */
+  y = 20;
+
+  /** @type {number} */
+  width = 450;
+
+  /** @type {number} */
+  height = 250;
+
+  /** @type {number} */
+  static LEVEL_END = 4000;
+
+  /** @type {number} */
+  static SPAWN_GAP = 350;
+
+  /** @type {number} */
+  static nextX = 0;
+
+  /**
+   * Creates a cloud with a random sprite, spawn position, and speed.
+   */
+  constructor() {
+    super();
+    const img =
+      cloud_assets.images[Math.floor(Math.random() * cloud_assets.images.length)];
+    this.loadImage(img);
+    /** @type {number} */
+    this.x = Cloud.spawnX();
+    /** @type {number} */
+    this.speed = 0.2 + Math.random() * 0.3;
+    this.startMoving();
+    /** @type {boolean} */
+    this.otherDirection = false;
+  }
+
+  /**
+   * Calculates the next spawn x-position with jitter and spacing.
+   * @returns {number}
+   */
+  static spawnX() {
+    if (Cloud.nextX === 0) Cloud.nextX = Math.random() * 400;
+    const jitter = (Math.random() - 0.5) * 180;
+    const x = Cloud.nextX + jitter;
+    Cloud.nextX += Cloud.SPAWN_GAP;
+    return x;
+  }
+
+  /**
+   * Starts the movement loop (~60 FPS).
+   * @returns {void}
+   */
+  startMoving() {
+    setInterval(() => this.updateMove(), 1000 / 60);
+  }
+
+  /**
+   * Updates cloud movement and wraps it to the right when it leaves the screen.
+   * Expects `this.world.camera_x` and `this.world.canvas.width` to exist.
+   * @returns {void}
+   */
+  updateMove() {
+    this.moveLeft();
+    if (this.x &lt; -this.width) {
+      const rightEdge = -this.world.camera_x + this.world.canvas.width;
+      this.x = rightEdge + 200 + Math.random() * 400;
+    }
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="BottlePickup.html">BottlePickup</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coin.html">Coin</a></li><li><a href="CollidableObject.html">CollidableObject</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="GameAudio.html">GameAudio</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="StatusBar.html">StatusBar</a></li><li><a href="StatusBarController.html">StatusBarController</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#$">$</a></li><li><a href="global.html#CHARACTER_ASSETS">CHARACTER_ASSETS</a></li><li><a href="global.html#audioManager">audioManager</a></li><li><a href="global.html#bindClick">bindClick</a></li><li><a href="global.html#bindKeyboardEvents">bindKeyboardEvents</a></li><li><a href="global.html#bindOutsideMenuClose">bindOutsideMenuClose</a></li><li><a href="global.html#bindSoundToggle">bindSoundToggle</a></li><li><a href="global.html#bindSoundUnlock">bindSoundUnlock</a></li><li><a href="global.html#bindUiButtons">bindUiButtons</a></li><li><a href="global.html#bottle_assets">bottle_assets</a></li><li><a href="global.html#canvas">canvas</a></li><li><a href="global.html#chicken_assets">chicken_assets</a></li><li><a href="global.html#closeControls">closeControls</a></li><li><a href="global.html#cloud_assets">cloud_assets</a></li><li><a href="global.html#coin_assets">coin_assets</a></li><li><a href="global.html#createAudioManager">createAudioManager</a></li><li><a href="global.html#createWorld">createWorld</a></li><li><a href="global.html#endboss_assets">endboss_assets</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#hideEndScreen">hideEndScreen</a></li><li><a href="global.html#hideStartScreen">hideStartScreen</a></li><li><a href="global.html#id">id</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initAudioManager">initAudioManager</a></li><li><a href="global.html#initCanvasAndKeyboard">initCanvasAndKeyboard</a></li><li><a href="global.html#initLevel">initLevel</a></li><li><a href="global.html#initSoundDefaultOff">initSoundDefaultOff</a></li><li><a href="global.html#initSoundIcon">initSoundIcon</a></li><li><a href="global.html#initUiAndEvents">initUiAndEvents</a></li><li><a href="global.html#keyboard">keyboard</a></li><li><a href="global.html#level_1">level_1</a></li><li><a href="global.html#onGameEnd">onGameEnd</a></li><li><a href="global.html#openControls">openControls</a></li><li><a href="global.html#prepareGameUi">prepareGameUi</a></li><li><a href="global.html#renderSoundIcon">renderSoundIcon</a></li><li><a href="global.html#replayGame">replayGame</a></li><li><a href="global.html#resetLevel">resetLevel</a></li><li><a href="global.html#setEndScreenImage">setEndScreenImage</a></li><li><a href="global.html#setKey">setKey</a></li><li><a href="global.html#setupSoundButton">setupSoundButton</a></li><li><a href="global.html#showEndScreen">showEndScreen</a></li><li><a href="global.html#showMobileControls">showMobileControls</a></li><li><a href="global.html#showOverlay">showOverlay</a></li><li><a href="global.html#showStartScreen">showStartScreen</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#startIntroMusic">startIntroMusic</a></li><li><a href="global.html#statusbar_assets">statusbar_assets</a></li><li><a href="global.html#stopWorld">stopWorld</a></li><li><a href="global.html#throwable_assets">throwable_assets</a></li><li><a href="global.html#toggleFullscreen">toggleFullscreen</a></li><li><a href="global.html#unlockAudioOnce">unlockAudioOnce</a></li><li><a href="global.html#updateSoundIcon">updateSoundIcon</a></li><li><a href="global.html#world">world</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Wed Feb 11 2026 18:26:51 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
