@@ -1,65 +1,91 @@
+/**
+ * @extends DrawableObject
+ */
 class MovableObject extends DrawableObject {
-speed = 0.15;
-otherDirection = false;
-speedY = 0;
-acceleration = 3;
-energy = 100;
-lastHit = 0;
+  /** @type {number} */
+  speed = 0.15;
 
+  /** @type {boolean} */
+  otherDirection = false;
 
-applyGravitaty() {
+  /** @type {number} */
+  speedY = 0;
+
+  /** @type {number} */
+  acceleration = 3;
+
+  /** @type {number} */
+  energy = 100;
+
+  /** @type {number} */
+  lastHit = 0;
+
+  /** @returns {void} */
+  applyGravitaty() {
     setInterval(() => {
-        if(this.isAboveGround() ||  this.speedY > 0) {
+      if (this.isAboveGround() || this.speedY > 0) {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
-    }
+      }
     }, 1000 / 25);
-}
-
-isAboveGround() {
-  if (this instanceof ThrowableObject) {
-    const groundY = 340;
-    return (this.y + this.height) < groundY;
   }
-  return this.y < 130;
-}
 
+  /** @returns {boolean} */
+  isAboveGround() {
+    if (this instanceof ThrowableObject) {
+      const groundY = 340;
+      return this.y + this.height < groundY;
+    }
+    return this.y < 130;
+  }
 
-hit(dmg = 5) {
-    if (this.isHurt()) return;  
+  /**
+   * @param {number} [dmg=5]
+   * @returns {void}
+   */
+  hit(dmg = 5) {
+    if (this.isHurt()) return;
     this.energy -= dmg;
-    if(this.energy < 0) {
-        this.energy = 0;
+    if (this.energy < 0) {
+      this.energy = 0;
     } else {
-        this.lastHit = Date.now();
+      this.lastHit = Date.now();
     }
-}   
+  }
 
-isHurt() {
+  /** @returns {boolean} */
+  isHurt() {
     return Date.now() - this.lastHit < 250;
-}
+  }
 
-
-isDead() {
+  /** @returns {boolean} */
+  isDead() {
     return this.energy == 0;
-}
+  }
 
-playAnimation(images){
-    let i = this.currentImage % images.length;
-    let path = images[i];
-        this.img = this.imageCache[path];
-        this.currentImage++;
- }
+  /**
+   * @param {string[]} images
+   * @returns {void}
+   */
+  playAnimation(images) {
+    const i = this.currentImage % images.length;
+    const path = images[i];
+    this.img = this.imageCache[path];
+    this.currentImage++;
+  }
 
-moveRight() {
+  /** @returns {void} */
+  moveRight() {
     this.x += this.speed;
-}
+  }
 
-moveLeft() {
+  /** @returns {void} */
+  moveLeft() {
     this.x -= this.speed;
-    }
+  }
 
-jump() {
+  /** @returns {void} */
+  jump() {
     this.speedY = 40;
-    }
+  }
 }
