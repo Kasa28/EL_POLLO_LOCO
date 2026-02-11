@@ -183,11 +183,16 @@ class World {
   }
 
   isStompHit(enemy) {
-    const fallingDown = this.character.speedY < 0;
-    const charBottom = this.character.y + this.character.height;
-    const enemyTop = enemy.y;
-    return fallingDown && charBottom < enemyTop + 30;
-  }
+  const falling = this.character.speedY < 0;
+  if (!falling) return false;
+  const charBottomNow = this.character.y + this.character.height;
+  const charBottomPrev = (this.character.y + this.character.speedY) + this.character.height; 
+  const enemyTop = enemy.y;
+  const MARGIN = 35; 
+  const cameFromAbove = charBottomPrev <= enemyTop + MARGIN;
+  const isNowAtOrBelowTop = charBottomNow >= enemyTop; 
+  return cameFromAbove && isNowAtOrBelowTop;
+}
 
   collectCoins() {
     if (!this.level.coins) return;
