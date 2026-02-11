@@ -181,7 +181,8 @@ class Character extends MovableObject {
 
   consumeBottle() {
     this.bottles = Math.max(0, this.bottles - 1);
-    this.world.updateBottleBar();
+    this.world?.hud?.update();
+    
   }
 
   playDeadOnce() {

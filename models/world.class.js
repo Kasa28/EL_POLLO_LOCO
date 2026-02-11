@@ -78,7 +78,6 @@ class World {
     this.handleEnemyCollisions();
     this.collectCoins();
     this.collectBottles();
-    this.stompChicken();
     this.activateBossIfNear();
     this.hud.update();
   }
@@ -164,10 +163,14 @@ class World {
   }
 
   handleChickenTouch(chicken) {
-    if (chicken.isDead) return;
-    if (this.isStompHit(chicken)) return;
-    this.damagePlayer();
+  if (chicken.isDead) return;
+  if (this.isStompHit(chicken)) {
+    chicken.die();
+    this.character.speedY = 15; 
+    return;
   }
+  this.damagePlayer();
+}
 
   handleOtherEnemyTouch(enemy) {
     if (enemy.isDead) return;
@@ -206,16 +209,7 @@ class World {
     });
   }
 
-  stompChicken() {
-    this.level.enemies?.forEach(enemy => {
-      if (!(enemy instanceof Chicken)) return;
-      if (enemy.isDead) return;
-      if (!this.character.isColliding(enemy)) return;
-      if (!this.isStompHit(enemy)) return;
-      enemy.die();
-      this.character.speedY = 15;
-    });
-  }
+
 
   activateBossIfNear() {
     const boss = this.getBoss();

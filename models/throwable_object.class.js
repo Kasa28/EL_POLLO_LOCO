@@ -40,8 +40,8 @@ class ThrowableObject extends MovableObject {
   updateFlightStep() {
     if (this.isSplashed) return;
     this.moveHorizontal();
-    this.moveVertical();
     this.applyGravity();
+    this.moveVertical();
     this.checkHits();
     this.trySplashOnGround();
   }
