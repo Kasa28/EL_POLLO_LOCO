@@ -15,8 +15,6 @@
   display: flex;
 }
 
-
-
 #endScreen .overlay-card{
   position: relative;
   width: 720px;
@@ -173,22 +171,17 @@
   right: 14px;
   bottom: 14px;
   z-index: 80;
-
   width: 54px;
   height: 54px;
   border-radius: 16px;
-
   border: 1px solid rgba(255,255,255,.18);
   background: rgba(20, 12, 6, .45);
   backdrop-filter: blur(6px);
-
   color: #f5c400;
   font-size: 22px;
   line-height: 1;
-
   display: grid;
   place-items: center;
-
   cursor: pointer;
   user-select: none;
   touch-action: manipulation;
@@ -249,15 +242,13 @@
   object-fit: cover;   
 }
 
-/* Fullscreen-Button oben rechts statt unten rechts */
 .fs-btn{
   top: 14px;
   right: 14px;
-  bottom: auto;   /* wichtig: bottom ausschalten */
+  bottom: auto; 
   left: auto;
 }
 
-/* Im Fullscreen auch oben rechts mit etwas mehr Abstand */
 .game-wrap:fullscreen .fs-btn{
   top: 18px;
   right: 18px;
