@@ -230,18 +230,45 @@ function bindOutsideMenuClose() {
   });
 }
 
-
 function setupSoundButton(audio) {
-  const btn = id("btnSound");
+  const btn  = id("btnSound");
   const icon = id("soundIcon");
   if (!btn || !icon) return;
-  renderSoundIcon(audio, icon);
+
+  initSoundIcon(audio, icon);
+  bindSoundUnlock(audio, icon);
+  bindSoundToggle(btn, audio, icon);
+}
+
+
+function initSoundIcon(audio, icon) {
+  updateSoundIcon(audio, icon);
+}
+
+
+function bindSoundUnlock(audio, icon) {
+  const unlock = () => {
+    audio.unlock();
+    updateSoundIcon(audio, icon);
+  };
+  window.addEventListener("pointerdown", unlock, { once: true });
+  window.addEventListener("keydown", unlock, { once: true });
+}
+
+
+function bindSoundToggle(btn, audio, icon) {
   btn.addEventListener("click", (e) => {
     e.preventDefault();
-    audio.unlock();
+    audio.unlock();           
     audio.toggle();
-    renderSoundIcon(audio, icon);
+    updateSoundIcon(audio, icon);
   });
+}
+
+
+function updateSoundIcon(audio, icon) {
+  const isOn = audio.enabled && audio.unlocked;
+  icon.src = isOn ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
 }
 
 
