@@ -1,28 +1,56 @@
+/**
+ * @extends MovableObject
+ */
 class Endboss extends MovableObject {
+  /** @type {number} */
   height = 400;
+  /** @type {number} */
   width = 250;
+  /** @type {number} */
   y = 60;
+
+  /** @type {number} */
   energy = 6;
+  /** @type {number} */
   MAX_ENERGY = 6;
+
+  /** @type {boolean} */
   isDead = false;
+  /** @type {boolean} */
   isActive = false;
+  /** @type {boolean} */
   isHurtBoss = false;
+  /** @type {boolean} */
   isRemoved = false;
+
+  /** @type {"walk"|"alert"|"attack"|"dead"} */
   currentState = "walk";
+
+  /** @type {number} */
   speed = 1.2;
+
+  /** @type {number} */
   lastAttack = 0;
+
+  /** @type {number} */
   attackCooldown = 1200;
+
+  /** @type {number|null} */
   spriteIntervalId = null;
+
+  /** @type {number|null} */
   logicIntervalId = null;
 
   constructor() {
     super();
+    /** @type {number} */
     this.x = 2500;
     this.loadImage(endboss_assets.walking[0]);
     this.preloadImages();
     this.animate();
   }
 
+  /** @returns {void} */
   preloadImages() {
     this.loadImages(endboss_assets.walking);
     this.loadImages(endboss_assets.alert);
@@ -31,12 +59,14 @@ class Endboss extends MovableObject {
     this.loadImages(endboss_assets.dead);
   }
 
+  /** @returns {void} */
   animate() {
     this.stop();
     this.startSpriteLoop();
     this.startLogicLoop();
   }
 
+  /** @returns {void} */
   stop() {
     if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
     if (this.logicIntervalId) clearInterval(this.logicIntervalId);
@@ -44,18 +74,22 @@ class Endboss extends MovableObject {
     this.logicIntervalId = null;
   }
 
+  /** @returns {void} */
   startSpriteLoop() {
     this.spriteIntervalId = setInterval(() => this.animateSprite(), 160);
   }
 
+  /** @returns {void} */
   startLogicLoop() {
     this.logicIntervalId = setInterval(() => this.updateLogic(), 1000 / 60);
   }
 
+  /** @returns {void} */
   animateSprite() {
     this.playAnimation(this.getSpriteFrames());
   }
 
+  /** @returns {string[]} */
   getSpriteFrames() {
     if (this.isDead) return endboss_assets.dead;
     if (this.isHurtBoss) return endboss_assets.hurt;
@@ -65,6 +99,7 @@ class Endboss extends MovableObject {
     return endboss_assets.walking;
   }
 
+  /** @returns {void} */
   updateLogic() {
     if (this.shouldSkipLogic()) return;
     const character = this.world.character;
@@ -74,6 +109,7 @@ class Endboss extends MovableObject {
     this.walkTowards(character);
   }
 
+  /** @returns {boolean} */
   shouldSkipLogic() {
     if (!this.world) return true;
     if (this.world.ending || this.world.gameOver) return true;
@@ -81,34 +117,55 @@ class Endboss extends MovableObject {
     return false;
   }
 
+  /**
+   * @param {{x:number}} character
+   * @returns {number}
+   */
   getDistanceTo(character) {
     return Math.abs(character.x - this.x);
   }
 
+  /** @returns {boolean} */
   isInAlert() {
     return this.currentState === "alert";
   }
 
+  /**
+   * @param {number} distance
+   * @returns {boolean}
+   */
   isInAttackRange(distance) {
     return distance < 95;
   }
 
+  /**
+   * @param {{x:number}} character
+   * @returns {void}
+   */
   walkTowards(character) {
     this.currentState = "walk";
     this.moveDirectionTo(character);
     this.moveStep();
   }
 
+  /**
+   * @param {{x:number}} character
+   * @returns {void}
+   */
   moveDirectionTo(character) {
     const goLeft = character.x < this.x;
+    /** @type {boolean} */
     this.otherDirection = !goLeft;
+    /** @type {number} */
     this.walkDir = goLeft ? -1 : 1;
   }
 
+  /** @returns {void} */
   moveStep() {
     this.x += this.walkDir * this.speed;
   }
 
+  /** @returns {void} */
   setActive() {
     if (this.isActive) return;
     this.isActive = true;
@@ -116,22 +173,30 @@ class Endboss extends MovableObject {
     this.leaveAlertLater();
   }
 
+  /** @returns {void} */
   setAlertState() {
     this.currentState = "alert";
   }
 
+  /** @returns {void} */
   leaveAlertLater() {
     setTimeout(() => this.trySetWalkState(), 1200);
   }
 
+  /** @returns {void} */
   trySetWalkState() {
     if (!this.isDead) this.currentState = "walk";
   }
 
+  /** @returns {boolean} */
   canAttack() {
     return Date.now() - this.lastAttack > this.attackCooldown;
   }
 
+  /**
+   * @param {{hit:(dmg:number)=>void}} character
+   * @returns {void}
+   */
   attack(character) {
     if (this.shouldSkipAttack()) return;
     if (!this.canAttack()) return;
@@ -140,6 +205,7 @@ class Endboss extends MovableObject {
     this.finishAttackLater();
   }
 
+  /** @returns {boolean} */
   shouldSkipAttack() {
     if (!this.world) return true;
     if (this.world.ending || this.world.gameOver) return true;
@@ -148,21 +214,31 @@ class Endboss extends MovableObject {
     return false;
   }
 
+  /** @returns {void} */
   startAttack() {
     this.currentState = "attack";
     this.lastAttack = Date.now();
     this.world?.sfx?.playOnce("attack_audio", 800);
   }
 
+  /**
+   * @param {{hit:(dmg:number)=>void}} character
+   * @returns {void}
+   */
   doAttackDamage(character) {
-  character.hit(2);
-  this.world?.hud?.update?.(); 
-}
+    character.hit(2);
+    this.world?.hud?.update?.();
+  }
 
+  /** @returns {void} */
   finishAttackLater() {
     setTimeout(() => this.trySetWalkState(), 600);
   }
 
+  /**
+   * @param {number} [dmg=2]
+   * @returns {void}
+   */
   hitBoss(dmg = 2) {
     if (this.isDead) return;
     this.energy -= dmg;
@@ -171,40 +247,40 @@ class Endboss extends MovableObject {
     this.clearHurtLater();
   }
 
+  /** @returns {void} */
   triggerHurt() {
     this.isHurtBoss = true;
   }
 
+  /** @returns {void} */
   clearHurtLater() {
     setTimeout(() => (this.isHurtBoss = false), 350);
   }
 
+  /** @returns {void} */
   die() {
-  if (this.isDead) return;
-  this.energy = 0;
-  this.isDead = true;
-  this.isHurtBoss = false;
-  this.currentState = "dead"; 
-  this.stopLogic();
-  this.animateSprite();
-  setTimeout(() => {
-    this.isRemoved = true;
-    this.stopSprite();
-  }, 1600);
-}
+    if (this.isDead) return;
+    this.energy = 0;
+    this.isDead = true;
+    this.isHurtBoss = false;
+    this.currentState = "dead";
+    this.stopLogic();
+    this.animateSprite();
+    setTimeout(() => {
+      this.isRemoved = true;
+      this.stopSprite();
+    }, 1600);
+  }
 
-   stopSprite() {
-  if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
-  this.spriteIntervalId = null;
- }
+  /** @returns {void} */
+  stopSprite() {
+    if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
+    this.spriteIntervalId = null;
+  }
 
+  /** @returns {void} */
   stopLogic() {
-  if (this.logicIntervalId) clearInterval(this.logicIntervalId);
-  this.logicIntervalId = null;
- }
-
-  stop() {
-  this.stopSprite();
-  this.stopLogic();
- }
+    if (this.logicIntervalId) clearInterval(this.logicIntervalId);
+    this.logicIntervalId = null;
+  }
 }
