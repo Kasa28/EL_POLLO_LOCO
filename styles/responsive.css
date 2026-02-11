@@ -1,0 +1,202 @@
+
+@media (pointer: coarse){
+  h1{ display:none; }
+  body{ padding: 8px; gap: 8px; }
+
+  .game-wrap{
+    width: min(78vw, 720px);
+    max-height: calc(100vh - 16px);
+  }
+
+  .mobile-controls{
+    display: flex;        
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    opacity: 1;
+    transform: none;
+    pointer-events: none;
+  }
+
+  .ctrl-left{
+    position: fixed;
+    left: calc(10px + env(safe-area-inset-left));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+  }
+
+  .ctrl-right{
+    position: fixed;
+    right: calc(10px + env(safe-area-inset-right));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+  }
+
+  .ctrl-btn{
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    border: 2px solid rgba(0,0,0,.25);
+    background: #f5c400;
+    color: #2b1d00;
+    font-size: 28px;
+    font-weight: 900;
+    box-shadow: 0 10px 0 rgba(0,0,0,.25);
+  }
+
+  #btnJump, #btnThrow{
+    width: 70px;
+    height: 70px;
+    font-size: 30px;
+  }
+}
+
+
+@media (max-width: 740px) and (max-height: 380px){
+  .game-wrap{ width: min(74vw, 620px); }
+  .ctrl-btn{ width: 52px; height: 52px; font-size: 22px; }
+  #btnJump, #btnThrow{ width: 58px; height: 58px; font-size: 24px; }
+}
+
+
+@media (hover: hover) and (pointer: fine){
+  .mobile-controls{ display: none !important; }
+}
+
+
+@media (max-height: 480px){
+  body{ padding: 8px; gap: 8px; }
+  h1{ display: none; }
+}
+
+
+@media (hover: none) and (pointer: coarse){
+  #legal-notice .bottomnav{ display: none; }
+  #legal-notice .topnav{
+    display: block;
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
+    z-index: 10050;
+  }
+}
+
+@media (orientation: portrait) and (any-pointer: coarse) {
+  #rotate-screen { display: block; }
+  body > :not(#rotate-screen) { display: none !important; }
+}
+
+@media (orientation: portrait) and (max-width: 900px) and (hover: none) {
+  #rotate-screen { display: block; }
+  body > :not(#rotate-screen) { display: none !important; }
+}
+
+@media (max-height: 480px){
+  body{ padding: 8px; gap: 8px; }
+  h1{ display: none; }
+}
+
+.mobile-controls{
+  display: none;
+}
+
+@media (any-pointer: coarse){
+  h1{ display:none; }
+  body{ padding: 8px; gap: 8px; }
+
+  .game-wrap{
+    width: min(78vw, 720px);
+    max-height: calc(100vh - 16px);
+  }
+
+  .mobile-controls{
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    opacity: 1;
+    transform: none;
+    pointer-events: none;
+  }
+
+  .ctrl-left{
+    position: fixed;
+    left: calc(10px + env(safe-area-inset-left));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+  }
+
+  .ctrl-right{
+    position: fixed;
+    right: calc(10px + env(safe-area-inset-right));
+    top: 50%;
+    transform: translateY(-50%);
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+  }
+
+  .ctrl-btn{
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    border: 2px solid rgba(0,0,0,.25);
+    background: #f5c400;
+    color: #2b1d00;
+    font-size: 28px;
+    font-weight: 900;
+    box-shadow: 0 10px 0 rgba(0,0,0,.25);
+  }
+
+  #btnJump, #btnThrow{
+    width: 70px;
+    height: 70px;
+    font-size: 30px;
+  }
+}
+
+@media (hover: none) and (max-width: 900px){
+  .mobile-controls{
+    display: flex;
+  }
+}
+
+@media (max-width: 740px) and (max-height: 380px){
+  .game-wrap{ width: min(74vw, 620px); }
+  .ctrl-btn{ width: 52px; height: 52px; font-size: 22px; }
+  #btnJump, #btnThrow{ width: 58px; height: 58px; font-size: 24px; }
+}
+
+@media (hover: hover) and (pointer: fine){
+  .mobile-controls{ display: none !important; }
+}
+
+@media (orientation: portrait) and (any-pointer: coarse){
+  #rotate-screen { display: block; }
+  body > :not(#rotate-screen){ display: none !important; }
+}
+
+@media (orientation: portrait) and (hover: none) and (max-width: 900px){
+  #rotate-screen { display: block; }
+  body > :not(#rotate-screen){ display: none !important; }
+}
+
+@media (any-pointer: coarse){
+  #legal-notice .bottomnav{ display: none; }
+  #legal-notice .topnav{
+    display: block;
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top));
+    right: calc(12px + env(safe-area-inset-right));
+    z-index: 10050;
+  }
+}

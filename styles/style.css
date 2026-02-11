@@ -18,7 +18,7 @@ body{
   justify-content: center;
   gap: 14px;
   padding: 18px 14px;
-  background: url("../img/bg/wüste.png") center/cover no-repeat fixed;
+  background: url('../img/bg/wüste.png') center/cover no-repeat fixed;
   font-family: "Bungee", sans-serif;
 }
 
@@ -48,49 +48,55 @@ h1{
   background: transparent;
 }
 
+
 .hud{
   position: absolute;
   top: 12px;
   right: 12px;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: clamp(6px, 1.6vw, 10px);
+  gap: 10px;
   z-index: 95;
 }
 
 .hud-btn{
-  width: clamp(32px, 5vw, 46px);
-  height: clamp(32px, 5vw, 46px);
+  width: 46px;
+  height: 46px;
   border: none;
-  border-radius: clamp(10px, 2vw, 12px);
+  border-radius: 12px;
   cursor: pointer;
   background: rgba(0,0,0,.28);
   backdrop-filter: blur(3px);
   display: grid;
   place-items: center;
-  padding: 0;
 }
 
 .hud .fs-btn,
 .hud .sound-btn{
   position: static !important;
-  inset: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
   margin: 0 !important;
-  width: clamp(32px, 5vw, 46px) !important;
-  height: clamp(32px, 5vw, 46px) !important;
 }
 
-#btnFullscreen{
-  font-size: clamp(14px, 2.6vw, 22px);
-  line-height: 1;
+.hud .sound-btn img{
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
-#btnSound img{
-  width: clamp(16px, 3.2vw, 26px);
-  height: clamp(16px, 3.2vw, 26px);
+.hud .fs-btn{
+  position: static !important;
+}
+
+.sound-btn img{
+  width: 26px;
+  height: 26px;
   object-fit: contain;
   pointer-events: none;
-  display: block;
 }
 
 .sound-btn.is-off{
@@ -109,6 +115,7 @@ h1{
   background: rgba(0,0,0,.25);
   backdrop-filter: blur(2px);
 }
+
 .overlay--show{ display: flex; }
 
 .overlay-card{
@@ -139,12 +146,11 @@ h1{
   left: 0;
   right: 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
   gap: 14px;
+  justify-content: center;
   padding: 0;
   background: transparent;
-  z-index: 70;
+  z-index: 5;
 }
 
 .ui-btn{
@@ -158,50 +164,12 @@ h1{
   box-shadow: 0 6px 0 rgba(0,0,0,.25);
   transition: transform .08s ease, filter .12s ease;
 }
+
 .ui-btn:active{ transform: translateY(1px); }
 
 .ui-btn--ghost{
   background: rgba(255,255,255,.14);
   color: #fff;
-}
-
-:root{ --hud-reserve: 120px; }
-
-#startScreen .overlay-actions--top{
-  left: 12px;
-  right: calc(12px + var(--hud-reserve));
-  gap: 10px;
-  flex-wrap: nowrap;    
-}
-
-
-#startScreen .overlay-actions--top .ui-btn{
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: 220px;
-  font-size: clamp(11px, 2.2vw, 14px);
-  padding: clamp(7px, 1.6vw, 12px) clamp(10px, 2.4vw, 18px);
-  line-height: 1.05;
-  white-space: normal;  
-  overflow: visible;
-  text-overflow: clip;
-}
-
-@media (max-width: 420px){
-  #startScreen .overlay-actions--top .ui-btn{
-    max-width: 180px;
-    font-size: 12px;
-    padding: 7px 10px;
-  }
-}
-
-@media (max-width: 380px){
-  :root{ --hud-reserve: 110px; }
-  #startScreen .overlay-actions--top .ui-btn{
-    max-width: 170px;
-    font-size: 11px;
-    padding: 6px 9px;
-  }
 }
 
 .mobile-controls{
@@ -220,6 +188,7 @@ h1{
 }
 
 .mobile-controls--show{
+  display: flex;     
   opacity: 1;
   transform: translateY(0);
 }
@@ -260,75 +229,6 @@ h1{
   border-radius: 18px;
 }
 
-@media (hover: none) and (pointer: coarse){
-  h1{ display: none; }
-  body{ padding: 8px; gap: 8px; }
-
-  .game-wrap{
-    width: min(78vw, 720px);
-    max-height: calc(100vh - 16px);
-  }
-
-  .mobile-controls{
-    display: flex; 
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    opacity: 1;
-    transform: none;
-    pointer-events: none;
-  }
-
-  .ctrl-left{
-    position: fixed;
-    left: calc(10px + env(safe-area-inset-left));
-    top: 50%;
-    transform: translateY(-50%);
-    flex-direction: column;
-    gap: 14px;
-    pointer-events: auto;
-  }
-
-  .ctrl-right{
-    position: fixed;
-    right: calc(10px + env(safe-area-inset-right));
-    top: 50%;
-    transform: translateY(-50%);
-    flex-direction: column;
-    gap: 14px;
-    pointer-events: auto;
-  }
-
-  .ctrl-btn{
-    width: 64px;
-    height: 64px;
-    border-radius: 999px;
-    border: 2px solid rgba(0,0,0,.25);
-    background: #f5c400;
-    color: #2b1d00;
-    font-size: 28px;
-    font-weight: 900;
-    box-shadow: 0 10px 0 rgba(0,0,0,.25);
-  }
-
-  #btnJump, #btnThrow{
-    width: 70px;
-    height: 70px;
-    font-size: 30px;
-  }
-}
-
-@media (max-width: 740px) and (max-height: 380px){
-  .game-wrap{ width: min(74vw, 620px); }
-  .ctrl-btn{ width: 52px; height: 52px; font-size: 22px; }
-  #btnJump, #btnThrow{ width: 58px; height: 58px; font-size: 24px; }
-}
-
-@media (min-width: 900px){
-  .mobile-controls{ display: none !important; }
-}
-
-
 #legal-notice .topnav{ display: none; }
 
 #legal-notice .bottomnav{
@@ -367,17 +267,6 @@ h1{
   display: block;
 }
 
-@media (hover: none) and (pointer: coarse){
-  #legal-notice .bottomnav{ display: none; }
-  #legal-notice .topnav{
-    display: block;
-    position: fixed;
-    top: calc(12px + env(safe-area-inset-top));
-    right: calc(12px + env(safe-area-inset-right));
-    z-index: 10050;
-  }
-}
-
 #rotate-screen{
   display: none;
   position: fixed;
@@ -395,14 +284,76 @@ h1{
   object-fit: cover;
 }
 
-@media (pointer: coarse) and (orientation: portrait){
-  #rotate-screen{ display: block; }
-  body > :not(#rotate-screen){
-    display: none !important;
+#startScreen .overlay-actions--top{
+  position: absolute;
+  top: 14px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;     
+  gap: 10px;
+  padding-right: 110px;
+}
+
+#startScreen .overlay-actions--top .ui-btn{
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: clamp(7px, 1.6vw, 10px) clamp(12px, 2.6vw, 16px);
+  font-size: clamp(12px, 2.8vw, 14px);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+@media (max-width: 420px){
+  #startScreen .overlay-actions--top{
+    gap: 8px;
+    padding-right: 100px;
+  }
+  #startScreen .overlay-actions--top .ui-btn{
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
 
-@media (max-height: 480px){
-  body{ padding: 8px; gap: 8px; }
-  h1{ display: none; }
+.hud{
+  top: clamp(8px, 2vw, 12px);
+  right: clamp(8px, 2vw, 12px);
+  gap: clamp(6px, 1.4vw, 10px);
+}
+
+.hud-btn{
+  width: clamp(34px, 5vw, 46px);
+  height: clamp(34px, 5vw, 46px);
+  border-radius: clamp(10px, 1.8vw, 12px);
+  padding: 0;
+}
+
+.hud .fs-btn,
+.hud .sound-btn{
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+
+  width: clamp(34px, 5vw, 46px) !important;
+  height: clamp(34px, 5vw, 46px) !important;
+}
+
+#btnFullscreen{
+  font-size: clamp(14px, 2.8vw, 20px);
+  line-height: 1;
+}
+
+#btnSound img{
+  width: clamp(16px, 3.2vw, 24px);
+  height: clamp(16px, 3.2vw, 24px);
+}
+
+#legal-notice .topnav{ display: none; }
+#legal-notice .bottomnav{
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
 }
