@@ -1,20 +1,66 @@
-let canvas;
-let world;
-let keyboard;
-let audioManager;
-
+let 
+canvas,
+world,
+keyboard, 
+audioManager;
 const ASSETS = {
   win:  "img/You won, you lost/You won A.png",
-  lose: "img/9_intro_outro_screens/game_over/game over.png"
+  lose: "img/9_intro_outro_screens/game_over/game over.png",
 };
 
+const $  = (sel) => document.querySelector(sel);
+const id = (sel) => document.getElementById(sel);
+
+
+function showOverlay(name, show) {
+  id(name)?.classList.toggle("overlay--show", show);
+}
+
+
+function showMobileControls(show) {
+  $(".mobile-controls")?.classList.toggle("mobile-controls--show", show);
+}
+
+
 function init() {
+  initSoundDefaultOff();
+  initCanvasAndKeyboard();
+  initAudioManager();
+  initUiAndEvents();
+  showStartScreen();
+}
+
+
+function initSoundDefaultOff() {
   if (localStorage.getItem("soundEnabled") === null) {
     localStorage.setItem("soundEnabled", "false");
   }
-  canvas = document.getElementById("canvas");
+}
+
+
+function initCanvasAndKeyboard() {
+  canvas = id("canvas");
   keyboard = new Keyboard();
-  audioManager = new GameAudio(
+}
+
+
+function initAudioManager() {
+  audioManager = createAudioManager();
+  startIntroMusic();
+  setupSoundButton(audioManager);
+  unlockAudioOnce(audioManager);
+}
+
+
+function initUiAndEvents() {
+  bindUiButtons();
+  bindKeyboardEvents();
+  bindOutsideMenuClose();
+}
+
+
+function createAudioManager() {
+  return new GameAudio(
     {
       ...bottle_assets.sounds,
       ...CHARACTER_ASSETS.sounds,
@@ -23,189 +69,181 @@ function init() {
     },
     0.6
   );
-
-  audioManager.switchMusic("audio/intro_game.mp3", 0.35);
-  setupSoundButton(audioManager);
-  window.addEventListener("pointerdown", () => audioManager.unlock(), { once: true });
-  window.addEventListener("keydown", () => audioManager.unlock(), { once: true });
-  bindUiButtons();
-  bindKeyboardEvents();
-  showStartScreen();
 }
 
-function bindUiButtons() {
-  const btnStart = document.getElementById("btnStart");
-  const btnControls = document.getElementById("btnControls");
-  const btnReplay = document.getElementById("btnReplay");
-  const btnHome = document.getElementById("btnHome");
-  const btnFullscreen = document.getElementById("btnFullscreen");
-  if (btnFullscreen) btnFullscreen.addEventListener("click", toggleFullscreen);
-  btnStart.addEventListener("click", startGame);
-  btnReplay.addEventListener("click", replayGame);
-  btnHome.addEventListener("click", goHome);
-  btnControls.addEventListener("click", openControls);
-  document.getElementById("btnCloseControls").addEventListener("click", closeControls);
-  }
+
+function startIntroMusic() {
+  audioManager.switchMusic("audio/intro_game.mp3", 0.35, true);
+}
+
+
+function unlockAudioOnce(audio) {
+  const unlock = () => audio.unlock();
+  window.addEventListener("pointerdown", unlock, { once: true });
+  window.addEventListener("keydown", unlock, { once: true });
+}
+
+
+function showStartScreen() {
+  showOverlay("startScreen", true);
+  showOverlay("endScreen", false);
+  showMobileControls(false);
+}
+
+
+function hideStartScreen() {
+  showOverlay("startScreen", false);
+}
+
+
+function showEndScreen(won) {
+  setEndScreenImage(won);
+  showOverlay("endScreen", true);
+  showMobileControls(false);
+}
+
+
+function hideEndScreen() {
+  showOverlay("endScreen", false);
+}
+
+
+function setEndScreenImage(won) {
+  const img = id("endImage");
+  if (!img) return;
+  img.src = won ? ASSETS.win : ASSETS.lose;
+  img.alt = won ? "You Won" : "Game Over";
+}
+
 
 function startGame() {
-  hideStartScreen();
-  hideEndScreen();
-  showIngameUi();
-  initLevel();
-  world = new World(canvas, keyboard, onGameEnd, audioManager);
+  prepareGameUi();
+  resetLevel();
+  createWorld();
 }
 
 function replayGame() {
-  audioManager.switchMusic("audio/intro_game.mp3", 0.35, true);
-  if (world?.stopLoops) world.stopLoops();
-  hideEndScreen();
-  showIngameUi();
-  initLevel();
-  world = new World(canvas, keyboard, onGameEnd, audioManager);
+  stopWorld();
+  startIntroMusic();
+  startGame();
 }
 
+
 function goHome() {
-  if (world?.stopLoops) world.stopLoops();
-  world = null;
-  audioManager.switchMusic("audio/intro_game.mp3", 0.35, true);
-  hideEndScreen();
-  hideIngameUi();
+  stopWorld();
+  startIntroMusic();
   showStartScreen();
 }
 
+
 function onGameEnd(won) {
-  hideIngameUi();
   showEndScreen(won);
 }
 
-function showStartScreen() {
-  document.getElementById("startScreen").classList.add("overlay--show");
-  document.getElementById("endScreen").classList.remove("overlay--show");
 
-  hideIngameUi();
+function prepareGameUi() {
+  hideStartScreen();
+  hideEndScreen();
+  showMobileControls(true);
 }
 
-function hideStartScreen() {
-  document.getElementById("startScreen").classList.remove("overlay--show");
+
+function resetLevel() {
+  initLevel();
 }
 
-function showEndScreen(won) {
-  const endImg = document.getElementById("endImage");
-  endImg.src = won ? ASSETS.win : ASSETS.lose;
-  endImg.alt = won ? "You Won" : "Game Over";
-  document.getElementById("endScreen").classList.add("overlay--show");
+
+function createWorld() {
+  world = new World(canvas, keyboard, onGameEnd, audioManager);
 }
 
-function hideEndScreen() {
-  document.getElementById("endScreen").classList.remove("overlay--show");
+
+function stopWorld() {
+  world?.stopLoops?.();
+  world = null;
 }
 
-function showIngameUi() {
-  document.querySelector(".mobile-controls").classList.add("mobile-controls--show");
-}
 
-function hideIngameUi() {
-  document.querySelector(".mobile-controls").classList.remove("mobile-controls--show");
-}
+function openControls()  { 
+  showOverlay("controlsModal", true);
+ }
 
-function openControls() {
-  document.getElementById("controlsModal").classList.add("overlay--show");
-}
 
 function closeControls() {
-  document.getElementById("controlsModal").classList.remove("overlay--show");
-}
+   showOverlay("controlsModal", false); 
+  }
+
 
 function toggleFullscreen() {
-  const wrap = document.querySelector(".game-wrap");
+  const wrap = $(".game-wrap");
   if (!wrap) return;
-
-  if (!document.fullscreenElement) {
-    wrap.requestFullscreen?.();
-  } else {
-    document.exitFullscreen?.();
-  }
+  if (!document.fullscreenElement) wrap.requestFullscreen?.();
+  else document.exitFullscreen?.();
 }
-
-function enterFullscreen(element) {
-  if (!element) return;
-  if (element.requestFullscreen) {
-    element.requestFullscreen();
-  } else if (element.webkitRequestFullscreen) { 
-    element.webkitRequestFullscreen();
-  } else if (element.msRequestFullscreen) { 
-    element.msRequestFullscreen();
-  }
-}
-
-function exitFullscreen() {
-  if (document.exitFullscreen) {
-    document.exitFullscreen();
-  } else if (document.webkitExitFullscreen) { 
-    document.webkitExitFullscreen();
-  } else if (document.msExitFullscreen) { 
-    document.msExitFullscreen();
-  }
-}
-
-
-window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeControls();
-});
-
-
 
 
 function bindKeyboardEvents() {
-  window.addEventListener("keyup", (e) => {
-    if (!keyboard) return;
-    if (e.keyCode === 39) keyboard.RIGHT = false;
-    if (e.keyCode === 37) keyboard.LEFT = false;
-    if (e.keyCode === 38) keyboard.UP = false;
-    if (e.keyCode === 40) keyboard.DOWN = false;
-    if (e.keyCode === 32) keyboard.SPACE = false;
-    if (e.keyCode === 68) keyboard.D = false;
-  });
+  const map = {
+    39: "RIGHT",
+    37: "LEFT",
+    38: "UP",
+    40: "DOWN",
+    32: "SPACE",
+    68: "D",
+  };
+  window.addEventListener("keydown", (e) => setKey(map[e.keyCode], true));
+  window.addEventListener("keyup",   (e) => setKey(map[e.keyCode], false));
+}
 
+
+function setKey(keyName, value) {
+  if (!keyboard || !keyName) return;
+  keyboard[keyName] = value;
+}
+
+
+function bindUiButtons() {
+  bindClick("btnStart", startGame);
+  bindClick("btnReplay", replayGame);
+  bindClick("btnHome", goHome);
+  bindClick("btnControls", openControls);
+  bindClick("btnCloseControls", closeControls);
+  bindClick("btnFullscreen", toggleFullscreen);
   window.addEventListener("keydown", (e) => {
-    if (!keyboard) return;
-    if (e.keyCode === 39) keyboard.RIGHT = true;
-    if (e.keyCode === 37) keyboard.LEFT = true;
-    if (e.keyCode === 38) keyboard.UP = true;
-    if (e.keyCode === 40) keyboard.DOWN = true;
-    if (e.keyCode === 32) keyboard.SPACE = true;
-    if (e.keyCode === 68) keyboard.D = true;
+    if (e.key === "Escape") closeControls();
   });
 }
 
-document.addEventListener("click", (e) => {
-  const menu = document.getElementById("hamburger-menu");
-  const topnav = document.querySelector("#legal-notice .topnav");
-  if (!menu || !topnav) return;
-  const clickedInside = topnav.contains(e.target);
-  if (!clickedInside) menu.classList.remove("is-open");
-});
+
+function bindClick(idName, handler) {
+  id(idName)?.addEventListener("click", handler);
+}
+
+
+function bindOutsideMenuClose() {
+  document.addEventListener("click", (e) => {
+    const menu = id("hamburger-menu");
+    const topnav = $("#legal-notice .topnav");
+    if (!menu || !topnav) return;
+    if (!topnav.contains(e.target)) menu.classList.remove("is-open");
+  });
+}
+
 
 function setupSoundButton(audio) {
-  const btn = document.getElementById("btnSound");
-  const icon = document.getElementById("soundIcon");
+  const btn = id("btnSound");
+  const icon = id("soundIcon");
   if (!btn || !icon) return;
-
-  const render = () => {
-    icon.src = audio.enabled ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
-  };
-
-  const unlockOnce = () => audio.unlock();
-  window.addEventListener("pointerdown", unlockOnce, { once: true });
-  window.addEventListener("keydown", unlockOnce, { once: true });
-
-  render();
-
+  renderSoundIcon(audio, icon);
   btn.addEventListener("click", (e) => {
     e.preventDefault();
-    audio.unlock();   
-    audio.toggle();  
-    render();
+    audio.unlock();
+    audio.toggle();
+    renderSoundIcon(audio, icon);
   });
+}
 
+
+function renderSoundIcon(audio, iconEl) {
+  iconEl.src = audio.enabled ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
 }
