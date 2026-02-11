@@ -12,7 +12,8 @@ class GameAudio {
     /** @type {number} */
     this.volume = volume;
     /** @type {boolean} */
-    this.enabled = localStorage.getItem("soundEnabled") === "true";
+    const saved = localStorage.getItem("soundEnabled");
+    this.enabled = saved === null ? false : saved === "true";
     /** @type {boolean} */
     this.unlocked = false;
     /** @type {HTMLAudioElement|null} */
@@ -31,6 +32,10 @@ class GameAudio {
   unlock() {
     this.unlocked = true;
     this.tryPlayMusic();
+    window.addEventListener("beforeunload", () => this.saveMusicState());
+    document.addEventListener("visibilitychange", () => {
+    if (document.hidden) this.saveMusicState();
+  });
   }
 
   /** @returns {void} */
@@ -46,16 +51,24 @@ class GameAudio {
    * @returns {void}
    */
   switchMusic(src, volume = this.musicVolume, loop = true) {
-    this.stopMusic();
-    this.music = this.createMusic(src, volume, loop);
-    this.tryPlayMusic();
-  }
+  this.saveMusicState();
+  const savedSrc = localStorage.getItem("musicSrc") || "";
+  const isSame = savedSrc.includes(src) || src.includes(savedSrc);
+  if (!isSame) localStorage.setItem("musicTime", "0");
+  this.stopMusic(false); 
+  this.music = this.createMusic(src, volume, loop);
+  const t = this.getSavedTimeFor(src);
+  this.applyTimeWhenReady(this.music, t);
+  this.tryPlayMusic();
+}
 
   /** @returns {void} */
-  stopMusic() {
-    if (!this.music) return;
-    this.music.pause();
-    this.music.currentTime = 0;
+  /** @param {boolean} [reset=false] @returns {void} */
+  stopMusic(reset = false) {
+   if (!this.music) return;
+   this.saveMusicState();
+   this.music.pause();
+   if (reset) this.music.currentTime = 0;
   }
 
   /**
@@ -82,7 +95,7 @@ class GameAudio {
   /** @returns {void} */
   applyEnabledState() {
     if (this.enabled) return this.tryPlayMusic();
-    this.stopMusic();
+    this.stopMusic(false);
     this.stopAllSfx();
   }
 
@@ -265,4 +278,35 @@ class GameAudio {
     this.loopingSfx.delete(key);
     this.activeSfx.delete(a);
   }
+
+  /** @returns {void} */
+  saveMusicState() {
+    if (!this.music) return;
+    localStorage.setItem("musicSrc", this.music.src);
+    localStorage.setItem("musicTime", String(this.music.currentTime || 0));
+  }
+
+/** @param {string} src @returns {number} */
+  getSavedTimeFor(src) {
+    const savedSrc = localStorage.getItem("musicSrc");
+    if (!savedSrc) return 0;
+    const sameTrack = savedSrc.includes(src) || src.includes(savedSrc);
+    if (!sameTrack) return 0;
+    const t = Number(localStorage.getItem("musicTime") || 0);
+    return Number.isFinite(t) ? t : 0;
+  }
+
+/** @param {HTMLAudioElement} a @param {number} t @returns {void} */
+  applyTimeWhenReady(a, t) {
+    if (!(t > 0)) return;
+    const setTime = () => {
+    try {
+     const dur = a.duration;
+     if (Number.isFinite(dur) && dur > 0) a.currentTime = Math.min(t, dur - 0.25);
+     else a.currentTime = t;
+    } catch {}
+  };
+    if (a.readyState >= 1) setTime();
+    else a.addEventListener("loadedmetadata", setTime, { once: true });
+}
 }

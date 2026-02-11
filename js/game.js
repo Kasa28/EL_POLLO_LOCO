@@ -85,7 +85,12 @@ function startIntroMusic() {
 
 /** @param {GameAudio} audio @returns {void} */
 function unlockAudioOnce(audio) {
-  const unlock = () => audio.unlock();
+  const unlock = () => {
+    audio.unlock();
+    audio.applyEnabledState(); 
+    const icon = id("soundIcon");
+    if (icon) updateSoundIcon(audio, icon);
+  };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
 }
@@ -278,8 +283,10 @@ function bindSoundToggle(btn, audio, icon) {
 
 /** @param {GameAudio} audio @param {HTMLImageElement} icon @returns {void} */
 function updateSoundIcon(audio, icon) {
-  const isOn = audio.enabled && audio.unlocked;
+  const btn = id("btnSound");
+  const isOn = audio.enabled;  
   icon.src = isOn ? "img/ton/ton_on.png" : "img/ton/ton_off.png";
+  btn?.classList.toggle("is-off", !isOn);
 }
 
 /** @param {GameAudio} audio @param {HTMLImageElement} iconEl @returns {void} */
