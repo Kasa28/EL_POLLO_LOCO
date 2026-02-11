@@ -118,6 +118,7 @@ function setEndScreenImage(won) {
 
 function startGame() {
   prepareGameUi();
+  Cloud.nextX = 0;
   resetLevel();
   createWorld();
 }

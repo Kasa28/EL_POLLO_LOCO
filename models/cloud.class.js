@@ -13,6 +13,7 @@ class Cloud extends MovableObject {
     this.x = Cloud.spawnX();
     this.speed = 0.2 + Math.random() * 0.3;
     this.startMoving();
+    this.otherDirection = false;
   }
 
   static spawnX() {
