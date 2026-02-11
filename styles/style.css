@@ -367,3 +367,12 @@ h1{
     display: none !important;
   }
 }
+.mobile-controls {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .mobile-controls {
+    display: flex; 
+  }
+}
