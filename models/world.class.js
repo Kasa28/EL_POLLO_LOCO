@@ -238,6 +238,10 @@ class World {
     return this.character.energy <= 0;
   }
 
+  syncHud() { 
+    this.hud.update();
+   }
+
   isBossRemovedAfterDeath() {
     const boss = this.getBoss();
     return !!boss && boss.isDead && boss.isRemoved;

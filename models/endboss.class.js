@@ -155,9 +155,9 @@ class Endboss extends MovableObject {
   }
 
   doAttackDamage(character) {
-    character.hit(2);
-    this.world?.updateHealthBar();
-  }
+  character.hit(2);
+  this.world?.hud?.update?.(); 
+}
 
   finishAttackLater() {
     setTimeout(() => this.trySetWalkState(), 600);
@@ -180,10 +180,31 @@ class Endboss extends MovableObject {
   }
 
   die() {
-    if (this.isDead) return;
-    this.energy = 0;
-    this.isDead = true;
-    this.stop();
-    setTimeout(() => (this.isRemoved = true), 1000);
-  }
+  if (this.isDead) return;
+  this.energy = 0;
+  this.isDead = true;
+  this.isHurtBoss = false;
+  this.currentState = "dead"; 
+  this.stopLogic();
+  this.animateSprite();
+  setTimeout(() => {
+    this.isRemoved = true;
+    this.stopSprite();
+  }, 1600);
+}
+
+   stopSprite() {
+  if (this.spriteIntervalId) clearInterval(this.spriteIntervalId);
+  this.spriteIntervalId = null;
+ }
+
+  stopLogic() {
+  if (this.logicIntervalId) clearInterval(this.logicIntervalId);
+  this.logicIntervalId = null;
+ }
+
+  stop() {
+  this.stopSprite();
+  this.stopLogic();
+ }
 }

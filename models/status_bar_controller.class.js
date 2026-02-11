@@ -14,7 +14,7 @@ class StatusBarController {
     this.bottle = new StatusBar(this.assets.bottles, 10, 120, c.bottles, this.max.bottles);
     this.boss = new StatusBar(
       this.assets.boss,
-      480, 0,
+      300, 0,
       boss?.energy ?? 0,
       boss?.MAX_ENERGY ?? 6
     );
