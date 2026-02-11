@@ -59,7 +59,7 @@ class StatusBar extends DrawableObject {
   resolveImageIndex() {
     const maxIndex = this.images.length - 1;
     if (this.percentage <= 0) return 0;
-    const idx = Math.ceil((this.percentage / 100) * maxIndex);
+    const idx = Math.floor((this.percentage / 100) * maxIndex);
     return this.clamp(idx, 0, maxIndex);
   }
 
