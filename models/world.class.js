@@ -16,29 +16,25 @@ class World {
     this.onEnd = onEnd;
     this.sfx = sfx;
     this.level = level_1;
-    this.initHud();
     this.initGameObjects();
     this.linkWorldToObjects();
-    this.updateHealthBar();
-    this.updateCoinBar();
-    this.updateBottleBar();
+    this.hud = new StatusBarController(this, statusbar_assets, {
+      health: this.MAX_HEALTH,
+      coins: this.MAX_COINS,
+      bottles: this.MAX_BOTTLES,
+    });
+    this.hud.update();
     this.startLoops();
   }
 
-  initHud() {
-    this.statusBarHealth = new StatusBar(statusbar_assets.health, 10, 0, 100);
-    this.statusBarCoins  = new StatusBar(statusbar_assets.coins, 10, 60, 0);
-    this.statusBarBottle = new StatusBar(statusbar_assets.bottles, 10, 120, 0);
-    this.statusBarBoss   = new StatusBar(statusbar_assets.boss, 480, 0, 0);
-  }
-
   initGameObjects() {
-    this.character = new Character(this.sfx); 
+    this.character = new Character(this.sfx);
   }
 
   linkWorldToObjects() {
     this.character.world = this;
     this.character.start();
+
     this.level.enemies?.forEach(e => (e.world = this));
     const boss = this.getBoss();
     if (boss) boss.world = this;
@@ -84,32 +80,12 @@ class World {
     this.collectBottles();
     this.stompChicken();
     this.activateBossIfNear();
-    this.updateBossBar();
-    this.updateHealthBar();
+    this.hud.update();
   }
 
   cleanupAfterTick() {
     this.removeDeadEnemies();
     this.removeInvisibleBottles();
-  }
-
-  updateHealthBar() {
-    const hp = Math.max(0, Math.min(this.MAX_HEALTH, this.character.energy));
-    this.character.energy = hp;
-    this.statusBarHealth.setPercentage((hp / this.MAX_HEALTH) * 100);
-  }
-
-  updateCoinBar() {
-    const c = Math.max(0, Math.min(this.MAX_COINS, this.character.coins));
-    this.character.coins = c;
-    this.statusBarCoins.setPercentage((c / this.MAX_COINS) * 100);
-  }
-
-  updateBottleBar() {
-    const b = Math.max(0, Math.min(this.MAX_BOTTLES, this.character.bottles));
-    this.character.bottles = b;
-    const pct = (b / this.MAX_BOTTLES) * 100;
-    this.statusBarBottle.setPercentage(pct);
   }
 
   removeDeadEnemies() {
@@ -141,24 +117,15 @@ class World {
 
   drawLayerObjects() {
     this.drawObjects(this.level.backgroundObjects);
+    this.drawObjects(this.level.clouds);
     this.drawObjects(this.level.enemies);
     this.drawObjects(this.level.coins);
     this.drawObjects(this.level.bottles);
     this.drawObjects(this.throwableObjects);
-    this.drawObjects(this.level.clouds);
   }
 
   drawHud() {
-    this.drawObject(this.statusBarHealth);
-    this.drawObject(this.statusBarCoins);
-    this.drawObject(this.statusBarBottle);
-
-    const boss = this.getBoss();
-    if (this.shouldShowBossBar(boss)) this.drawObject(this.statusBarBoss);
-  }
-
-  shouldShowBossBar(boss) {
-    return boss && boss.isActive && !boss.isRemoved;
+    this.hud.draw(this.ctx);
   }
 
   drawObjects(list) {
@@ -209,7 +176,6 @@ class World {
 
   damagePlayer() {
     this.character.hit();
-    this.updateHealthBar();
     this.sfx.playHurt();
   }
 
@@ -225,8 +191,6 @@ class World {
     this.level.coins = this.level.coins.filter(coin => {
       if (!this.character.isColliding(coin)) return true;
       this.character.coins++;
-      this.character.coins = Math.min(this.character.coins, this.MAX_COINS);
-      this.updateCoinBar();
       this.sfx.playCollect();
       return false;
     });
@@ -237,8 +201,6 @@ class World {
     this.level.bottles = this.level.bottles.filter(bottle => {
       if (!this.character.isColliding(bottle)) return true;
       this.character.bottles++;
-      this.character.bottles = Math.min(this.character.bottles, this.MAX_BOTTLES);
-      this.updateBottleBar();
       this.sfx.playCollect();
       return false;
     });
@@ -262,17 +224,10 @@ class World {
     if (!this.isBossTriggerReached(boss)) return;
     boss.setActive();
     this.sfx.musicBoss();
-    this.statusBarBoss.setPercentage((boss.energy / boss.MAX_ENERGY) * 100);
   }
 
   isBossTriggerReached(boss) {
     return this.character.x > boss.x - 500;
-  }
-
-  updateBossBar() {
-    const boss = this.getBoss();
-    if (!boss || !boss.isActive || boss.isRemoved) return;
-    this.statusBarBoss.setPercentage((boss.energy / boss.MAX_ENERGY) * 100);
   }
 
   checkEndConditions() {
