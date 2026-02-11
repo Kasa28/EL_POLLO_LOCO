@@ -28,9 +28,10 @@ class Cloud extends MovableObject {
   }
 
   updateMove() {
-    this.moveLeft();
-    if (this.x < -this.width) {
-      this.x = Cloud.LEVEL_END + Math.random() * 500;
-    }
+  this.moveLeft();
+  if (this.x < -this.width) {
+    const rightEdge = -this.world.camera_x + this.world.canvas.width; 
+    this.x = rightEdge + 200 + Math.random() * 400;
   }
+}
 }

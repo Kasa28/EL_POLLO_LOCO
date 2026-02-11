@@ -34,10 +34,10 @@ class World {
   linkWorldToObjects() {
     this.character.world = this;
     this.character.start();
-
     this.level.enemies?.forEach(e => (e.world = this));
     const boss = this.getBoss();
     if (boss) boss.world = this;
+    this.level.clouds?.forEach(c => (c.world = this));
   }
 
   getBoss() {
