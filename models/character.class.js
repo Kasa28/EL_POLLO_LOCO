@@ -197,7 +197,7 @@ class Character extends MovableObject {
     this.idleTime += 50;
     const t = this.now();
     if (t - this.lastIdleFrame < 500) return;
-    const list = this.idleTime > 20000 ? this.images_long_idle : this.images_idle;
+    const list = this.idleTime > 7000 ? this.images_long_idle : this.images_idle;
     this.playAnimation(list);
     this.lastIdleFrame = t;
   }
@@ -278,7 +278,6 @@ class Character extends MovableObject {
       right,
       this.sfx
     );
-
     bottle.world = this.world;
     this.world.throwableObjects.push(bottle);
     this.sfx.playThrow();
@@ -294,11 +293,9 @@ class Character extends MovableObject {
   /** @returns {void} */
   playDeadOnce() {
     if (this.deadPlayedOnce) return;
-
     const last = this.images_dead.length - 1;
     const idx = Math.min(this.deadFrame, last);
     this.img = this.imageCache[this.images_dead[idx]];
-
     this.deadFrame++;
     if (this.deadFrame >= last) this.deadPlayedOnce = true;
   }
