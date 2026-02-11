@@ -1,3 +1,11 @@
+/**
+ * @type {{
+ *   health: string[],
+ *   coins: string[],
+ *   bottles: string[],
+ *   boss: string[]
+ * }}
+ */
 const statusbar_assets = {
   health: [
     "img/7_statusbars/1_statusbar/2_statusbar_health/blue/0.png",
@@ -20,7 +28,7 @@ const statusbar_assets = {
   bottles: [
     "img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/0.png",
     "img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/20.png",
-    "img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/40.png",
+    "img/7_statusbars/1_statusbars/1_statusbar/3_statusbar_bottle/blue/40.png",
     "img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/60.png",
     "img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/80.png",
     "img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/100.png",

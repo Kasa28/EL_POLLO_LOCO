@@ -1,18 +1,21 @@
+/**
+ * @type {{
+ *   walking: string[],
+ *   dead: string[],
+ *   sounds: {
+ *     chicken_dead: string[]
+ *   }
+ * }}
+ */
 const chicken_assets = {
   walking: [
     "img/3_enemies_chicken/chicken_normal/1_walk/1_w.png",
     "img/3_enemies_chicken/chicken_normal/1_walk/2_w.png",
     "img/3_enemies_chicken/chicken_normal/1_walk/3_w.png",
   ],
-  dead: [
-    "img/3_enemies_chicken/chicken_normal/2_dead/dead.png",
-  ],
+  dead: ["img/3_enemies_chicken/chicken_normal/2_dead/dead.png"],
 
-      sounds: {
-    chicken_dead: [
-        "audio/chicken-dead.mp3"
-    ],
-
+  sounds: {
+    chicken_dead: ["audio/chicken-dead.mp3"],
   },
-
 };

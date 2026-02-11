@@ -1,3 +1,19 @@
+/**
+ * @type {{
+ *   walking: string[],
+ *   jumping: string[],
+ *   dead: string[],
+ *   hurt: string[],
+ *   longIdle: string[],
+ *   idle: string[],
+ *   startImage: string,
+ *   sounds: {
+ *     jumping_audio: string[],
+ *     hurt_audio: string[],
+ *     walking_audio: string[]
+ *   }
+ * }}
+ */
 const CHARACTER_ASSETS = {
   walking: [
     "img/2_character_pepe/2_walk/W-21.png",
@@ -65,15 +81,8 @@ const CHARACTER_ASSETS = {
   startImage: "img/2_character_pepe/2_walk/W-21.png",
 
   sounds: {
-    jumping_audio: [
-        "audio/jump.mp3"
-    ],
-    hurt_audio: [
-        "audio/character_hurt.mp3"
-    ],
-
-    walking_audio: [
-        "audio/running-steps.mp3"
-      ],
+    jumping_audio: ["audio/jump.mp3"],
+    hurt_audio: ["audio/character_hurt.mp3"],
+    walking_audio: ["audio/running-steps.mp3"],
   },
 };
