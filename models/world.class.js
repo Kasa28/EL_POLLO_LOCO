@@ -96,7 +96,7 @@ class World {
       this.updateTick();
       this.cleanupAfterTick();
       this.checkEndConditions();
-    }, 50);
+    }, 70);
   }
 
   /** @returns {void} */
@@ -220,9 +220,19 @@ class World {
   }
 
   /** @returns {void} */
-  handleEnemyCollisions() {
-    this.level.enemies?.forEach((enemy) => this.handleSingleEnemyCollision(enemy));
+handleEnemyCollisions() {
+  if (Date.now() < (this.stompGraceUntil ?? 0)) return;
+  const enemies = this.level.enemies || [];
+  const hits = enemies.filter(e => e && !e.isRemoved && this.character.isColliding(e));
+  if (hits.length === 0) return;
+  const stompTarget = hits.find(e => e instanceof Chicken && !e.isDead && this.isStompHit(e));
+  if (stompTarget) {
+    this.stompChicken(stompTarget);
+    return; 
   }
+  const damaging = hits.find(e => !e.isDead);
+  if (damaging) this.damagePlayer();
+}
 
   /**
    * @param {any} enemy
@@ -234,7 +244,6 @@ class World {
     if (enemy instanceof Chicken) return this.handleChickenTouch(enemy);
     return this.handleOtherEnemyTouch(enemy);
   }
-
   /**
  * @param {Chicken} chicken
  * @returns {void}
@@ -245,26 +254,8 @@ handleChickenTouch(chicken) {
     this.stompChicken(chicken);
     return;
   }
-  if (this.isStandingOnTopOf(chicken)) {
-    this.snapCharacterOnTop(chicken); 
-    this.character.speedY = 0;          
-    return;
-  }
   this.damagePlayer();
 }
-
-isStandingOnTopOf(enemy) {
-  const a = this.character.getHitbox(this.character);
-  const b = this.character.getHitbox(enemy);
-  const xOverlap = a.right > b.left && a.left < b.right;
-  if (!xOverlap) return false;
-  const isAbove = a.top < b.top;
-  const TOP_BAND = 20;
-  const onTopBand = a.bottom >= b.top && a.bottom <= b.top + TOP_BAND;
-  const notRisingIntoEnemy = this.character.speedY <= 2;
-  return isAbove && onTopBand && notRisingIntoEnemy;
-}
-
 /**
  * Stomp ohne Bounce, aber mit kurzem "Aufprall".
  * @param {Chicken} chicken
@@ -272,12 +263,14 @@ isStandingOnTopOf(enemy) {
  */
 stompChicken(chicken) {
   chicken.die();
-  this.lastStomptAt = Date.now();
+  this.stompGraceUntil = Date.now() + 220;
+  const hb = this.character.getHitbox(this.character);
+  const feetOffset = hb.bottom - this.character.y;  
+  const STOMP_TOP = chicken.y + 10;                 
+  this.character.y = (STOMP_TOP - feetOffset) - 1;  
+  this.character.speedY = 8;
   this.sfx?.playOnce?.("stomp_audio", 120);
-  this.snapCharacterOnTop(chicken);
-  this.character.speedY = -2;
 }
-
 /**
  * @param {{ y:number }} chicken
  * @returns {void}
@@ -297,8 +290,8 @@ snapCharacterOnTop(chicken) {
   }
 
   /** @returns {void} */
-  damagePlayer() {
-  if (Date.now() - (this.lastStompAt ?? 0) < 150) return; 
+damagePlayer() {
+  if (Date.now() < (this.stompGraceUntil ?? 0)) return;
   this.character.hit();
   this.sfx.playHurt();
 }
@@ -306,18 +299,24 @@ snapCharacterOnTop(chicken) {
    * @param {{y:number}} enemy
    * @returns {boolean}
    */
-  isStompHit(enemy) {
-    const falling = this.character.speedY < 0;
-    if (!falling) return false;
-    const charBottomNow = this.character.y + this.character.height;
-    const charBottomPrev =
-      this.character.y + this.character.speedY + this.character.height;
-    const enemyTop = enemy.y;
-    const MARGIN = 35;
-    const cameFromAbove = charBottomPrev <= enemyTop + MARGIN;
-    const isNowAtOrBelowTop = charBottomNow >= enemyTop;
-    return cameFromAbove && isNowAtOrBelowTop;
-  }
+isStompHit(enemy) {
+  const char = this.character;
+  const prevY = (char.prevY ?? char.y);
+  const descending = char.y > prevY; 
+  if (!descending) return false;
+  const feetNow = char.getFeetBox(char);
+  const enemyHb = char.getHitbox(enemy);
+  const xOverlap = feetNow.right > enemyHb.left && feetNow.left < enemyHb.right;
+  if (!xOverlap) return false;
+  const STOMP_TOP = enemy.y + 10;
+  const BAND = 14;
+  const CONTACT_MIN = 2;
+  const feetOffset = feetNow.bottom - char.y;
+  const feetPrevBottom = prevY + feetOffset;
+  const wasAboveBand = feetPrevBottom <= STOMP_TOP + BAND;
+  const nowTouchesTop = feetNow.bottom >= STOMP_TOP + CONTACT_MIN;
+  return wasAboveBand && nowTouchesTop;
+}
 
   /** @returns {void} */
   collectCoins() {

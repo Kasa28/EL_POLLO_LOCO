@@ -23,8 +23,10 @@ class MovableObject extends DrawableObject {
   /** @returns {void} */
   /** @returns {void} */
 applyGravitaty() {
-  const groundY = 130; 
+  const groundY = 130;
   setInterval(() => {
+    this.prevSpeedY = this.speedY;  
+    this.prevY = this.y;        
     if (this.isAboveGround() || this.speedY > 0) {
       this.y -= this.speedY;
       this.speedY -= this.acceleration;
@@ -121,6 +123,18 @@ getHitbox(o) {
     right: o.x + o.width - off.right,
     top: o.y + off.top,
     bottom: o.y + o.height - off.bottom,
+  };
+}
+
+getFeetBox(o) {
+  const hb = this.getHitbox(o);
+  const FEET_H = 14;           
+  const SIDE_INSET = 1;     
+  return {
+    left: hb.left + SIDE_INSET,
+    right: hb.right - SIDE_INSET,
+    top: hb.bottom - FEET_H,
+    bottom: hb.bottom,
   };
 }
 }

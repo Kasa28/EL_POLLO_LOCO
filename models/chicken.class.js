@@ -12,7 +12,7 @@ class Chicken extends MovableObject {
 
   /** @type {boolean} Whether the chicken is dead (stops moving/animating). */
   isDead = false;
-  offset = { top: 20, bottom: 10, left: 20, right: 12 };
+  offset = { top: 6, bottom: 8, left: 0, right: 0 };
   /**
    * Creates a chicken at the given x-position.
    * @param {number} x - Initial horizontal position.
