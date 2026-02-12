@@ -25,7 +25,7 @@ class Character extends MovableObject {
   world;
   /** @type {any} */
   sfx;
-  offset = { top: 130, bottom: 2, left: 0, right: 0 };
+  offset = { top: 130, bottom: 2, left: 30, right: 30 };
   deadFrame = 0;
   deadPlayedOnce = false;
   THROW_COOLDOWN = 500;
