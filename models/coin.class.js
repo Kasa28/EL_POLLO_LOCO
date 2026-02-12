@@ -8,6 +8,7 @@ class Coin extends MovableObject {
 
   /** @type {number} */
   height = 80;
+  offset = { top: 14, bottom: 14, left: 14, right: 14 };
 
   /**
    * Creates a coin at a given position or at a random position if not provided.

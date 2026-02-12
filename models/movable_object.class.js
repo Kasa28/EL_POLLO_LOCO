@@ -94,4 +94,33 @@ applyGravitaty() {
   jump() {
     this.speedY = 40;
   }
+
+  /**
+ * @param {{x:number,y:number,width:number,height:number,offset?:{top:number,bottom:number,left:number,right:number}}} obj
+ * @returns {boolean}
+ */
+isColliding(obj) {
+  const a = this.getHitbox(this);
+  const b = this.getHitbox(obj);
+  return (
+    a.right > b.left &&
+    a.left < b.right &&
+    a.bottom > b.top &&
+    a.top < b.bottom
+  );
+}
+
+/**
+ * @param {{x:number,y:number,width:number,height:number,offset?:{top:number,bottom:number,left:number,right:number}}} o
+ * @returns {{left:number,right:number,top:number,bottom:number}}
+ */
+getHitbox(o) {
+  const off = o.offset ?? { top: 0, bottom: 0, left: 0, right: 0 };
+  return {
+    left: o.x + off.left,
+    right: o.x + o.width - off.right,
+    top: o.y + off.top,
+    bottom: o.y + o.height - off.bottom,
+  };
+}
 }

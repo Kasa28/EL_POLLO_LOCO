@@ -9,6 +9,7 @@ class Character extends MovableObject {
   height = 300;
   y = 80;
   speed = 8;
+  width = 100;
   images_walking = CHARACTER_ASSETS.walking;
   images_jumping = CHARACTER_ASSETS.jumping;
   images_dead = CHARACTER_ASSETS.dead;
@@ -24,7 +25,7 @@ class Character extends MovableObject {
   world;
   /** @type {any} */
   sfx;
-  offset = { top: 90, bottom: 5, left: 10, right: 30 };
+  offset = { top: 130, bottom: 5, left: 10, right: 45 };
   deadFrame = 0;
   deadPlayedOnce = false;
   THROW_COOLDOWN = 500;
