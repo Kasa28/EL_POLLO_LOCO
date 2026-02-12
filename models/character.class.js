@@ -197,7 +197,7 @@ class Character extends MovableObject {
     this.idleTime += 50;
     const t = this.now();
     if (t - this.lastIdleFrame < 500) return;
-    const list = this.idleTime > 7000 ? this.images_long_idle : this.images_idle;
+    const list = this.idleTime > 4000 ? this.images_long_idle : this.images_idle;
     this.playAnimation(list);
     this.lastIdleFrame = t;
   }
