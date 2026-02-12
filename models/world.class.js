@@ -48,6 +48,7 @@ class World {
     this.sfx = sfx;
     /** @type {Level} */
     this.level = level_1;
+    this.spreadPickups(this.level.bottles, 160); 
     this.initGameObjects();
     this.linkWorldToObjects();
     /** @type {StatusBarController} */
@@ -363,4 +364,20 @@ handleChickenTouch(chicken) {
       if (typeof this.onEnd === "function") this.onEnd(won);
     }, 400);
   }
+
+  /**
+ * Ensures pickups are not placed next to each other (min X gap).
+ * @param {Array<{x:number}>|undefined|null} list
+ * @param {number} gap
+ * @returns {void}
+ */
+spreadPickups(list, gap) {
+  if (!list || list.length < 2) return;
+  list.sort((a, b) => a.x - b.x);
+  for (let i = 1; i < list.length; i++) {
+    const prev = list[i - 1];
+    const cur = list[i];
+    if (cur.x - prev.x < gap) cur.x = prev.x + gap;
+  }
+}
 }

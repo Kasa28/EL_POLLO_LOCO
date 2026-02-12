@@ -26,6 +26,9 @@ class Endboss extends MovableObject {
 
   /** @type {number} */ bottlesHit = 0;
   /** @type {number} */ BOTTLES_TO_KILL = 5;
+  /** @type {number} */ baseSpeed = 1.2;
+  /** @type {number} */ runSpeed = 3.6;
+  /** @type {number} */ visionRange = 650;
 
   constructor() {
     super();
@@ -274,4 +277,24 @@ class Endboss extends MovableObject {
     if (this.logicIntervalId) clearInterval(this.logicIntervalId);
     this.logicIntervalId = null;
   }
+
+  /** @returns {void} */
+updateLogic() {
+  if (this.shouldSkipLogic()) return;
+  const character = this.world.character;
+  const distance = this.getDistanceTo(character);
+  this.updateSpeedByVision(distance);
+  if (this.isInAlert()) return;
+  if (this.isInAttackRange(distance)) return this.attack(character);
+  this.walkTowards(character);
+}
+
+/**
+ * Runs faster when player is within vision range.
+ * @param {number} distance
+ * @returns {void}
+ */
+updateSpeedByVision(distance) {
+  this.speed = distance <= this.visionRange ? this.runSpeed : this.baseSpeed;
+}
 }
