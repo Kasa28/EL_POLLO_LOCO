@@ -21,14 +21,20 @@ class MovableObject extends DrawableObject {
   lastHit = 0;
 
   /** @returns {void} */
-  applyGravitaty() {
-    setInterval(() => {
-      if (this.isAboveGround() || this.speedY > 0) {
-        this.y -= this.speedY;
-        this.speedY -= this.acceleration;
+  /** @returns {void} */
+applyGravitaty() {
+  const groundY = 130; 
+  setInterval(() => {
+    if (this.isAboveGround() || this.speedY > 0) {
+      this.y -= this.speedY;
+      this.speedY -= this.acceleration;
+      if (this.y > groundY) {
+        this.y = groundY;
+        this.speedY = 0;
       }
-    }, 1000 / 25);
-  }
+    }
+  }, 1000 / 25);
+}
 
   /** @returns {boolean} */
   isAboveGround() {

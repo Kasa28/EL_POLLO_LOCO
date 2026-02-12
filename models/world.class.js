@@ -238,16 +238,21 @@ class World {
    * @param {Chicken} chicken
    * @returns {void}
    */
-  handleChickenTouch(chicken) {
-    if (chicken.isDead) return;
-    if (this.isStompHit(chicken)) {
-      chicken.die();
-      this.character.speedY = 15;
-      return;
-    }
-    this.damagePlayer();
+
+  /**
+ * @param {Chicken} chicken
+ * @returns {void}
+ */
+handleChickenTouch(chicken) {
+  if (chicken.isDead) return;
+  if (this.isStompHit(chicken)) {
+    chicken.die();
+    this.character.y = chicken.y - this.character.height + 1;
+    return;
   }
 
+  this.damagePlayer();
+}
   /**
    * @param {any} enemy
    * @returns {void}

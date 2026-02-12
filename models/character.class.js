@@ -34,8 +34,9 @@ class Character extends MovableObject {
   jumpAnimDone = false;
   lastJumpFrameAt = 0;
   JUMP_FRAME_MS = 130; 
-  JUMP_SPEED = 30;     
+  JUMP_SPEED = 35;     
   canJump = true;      
+  accelereration = 4;
   /**
    * @param {any} sfx Sound effects handler
    */
