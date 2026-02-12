@@ -241,13 +241,28 @@ class World {
  */
 handleChickenTouch(chicken) {
   if (chicken.isDead) return;
-
   if (this.isStompHit(chicken)) {
     this.stompChicken(chicken);
     return;
   }
-
+  if (this.isStandingOnTopOf(chicken)) {
+    this.snapCharacterOnTop(chicken); 
+    this.character.speedY = 0;          
+    return;
+  }
   this.damagePlayer();
+}
+
+isStandingOnTopOf(enemy) {
+  const a = this.character.getHitbox(this.character);
+  const b = this.character.getHitbox(enemy);
+  const xOverlap = a.right > b.left && a.left < b.right;
+  if (!xOverlap) return false;
+  const isAbove = a.top < b.top;
+  const TOP_BAND = 20;
+  const onTopBand = a.bottom >= b.top && a.bottom <= b.top + TOP_BAND;
+  const notRisingIntoEnemy = this.character.speedY <= 2;
+  return isAbove && onTopBand && notRisingIntoEnemy;
 }
 
 /**
@@ -257,6 +272,7 @@ handleChickenTouch(chicken) {
  */
 stompChicken(chicken) {
   chicken.die();
+  this.lastStomptAt = Date.now();
   this.sfx?.playOnce?.("stomp_audio", 120);
   this.snapCharacterOnTop(chicken);
   this.character.speedY = -2;
@@ -282,10 +298,10 @@ snapCharacterOnTop(chicken) {
 
   /** @returns {void} */
   damagePlayer() {
-    this.character.hit();
-    this.sfx.playHurt();
-  }
-
+  if (Date.now() - (this.lastStompAt ?? 0) < 150) return; 
+  this.character.hit();
+  this.sfx.playHurt();
+}
   /**
    * @param {{y:number}} enemy
    * @returns {boolean}

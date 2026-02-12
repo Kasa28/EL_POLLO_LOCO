@@ -8,11 +8,11 @@ class Chicken extends MovableObject {
   y = 330;
 
   /** @type {number} Render height in px. */
-  height = 100;
+  height = 110;
 
   /** @type {boolean} Whether the chicken is dead (stops moving/animating). */
   isDead = false;
-
+  offset = { top: 20, bottom: 10, left: 20, right: 12 };
   /**
    * Creates a chicken at the given x-position.
    * @param {number} x - Initial horizontal position.
