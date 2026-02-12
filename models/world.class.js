@@ -236,24 +236,41 @@ class World {
   }
 
   /**
-   * @param {Chicken} chicken
-   * @returns {void}
-   */
-
-  /**
  * @param {Chicken} chicken
  * @returns {void}
  */
 handleChickenTouch(chicken) {
   if (chicken.isDead) return;
+
   if (this.isStompHit(chicken)) {
-    chicken.die();
-    this.character.y = chicken.y - this.character.height + 1;
+    this.stompChicken(chicken);
     return;
   }
 
   this.damagePlayer();
 }
+
+/**
+ * Stomp ohne Bounce, aber mit kurzem "Aufprall".
+ * @param {Chicken} chicken
+ * @returns {void}
+ */
+stompChicken(chicken) {
+  chicken.die();
+  this.sfx?.playOnce?.("stomp_audio", 120);
+  this.snapCharacterOnTop(chicken);
+  this.character.speedY = -2;
+}
+
+/**
+ * @param {{ y:number }} chicken
+ * @returns {void}
+ */
+snapCharacterOnTop(chicken) {
+  const OVERLAP_FIX = 2;
+  this.character.y = chicken.y - this.character.height + OVERLAP_FIX;
+}
+
   /**
    * @param {any} enemy
    * @returns {void}
